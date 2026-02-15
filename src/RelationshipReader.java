@@ -9,12 +9,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
-public abstract class RelationshipReader {
-
-	private static final int PERSON1 = 0;
-	private static final int PERSON2 = 1;
-	private static final int RELATIONSHIP = 2;
-	private static final int URL = 3;
+public abstract class RelationshipReader implements HistoryFileProcessor {
 
 	private CSVReader fileReader;
 	protected Map<String,GraphNode> nodes = new HashMap<>();
@@ -30,22 +25,13 @@ public abstract class RelationshipReader {
 		for(String[] row : fileReader.readAll()) {
 			if(row.length<3)
 				continue;
-//			node1 = createNode(row[PERSON1],(row.length<4)?"":row[URL]);
-			node1 = createNode(row[PERSON1],row[PERSON1]+".html"); // add default URl
+			node1 = createNode(row[SENIOR_PERSON]); // add default URl
 			nodes.putIfAbsent(node1.getId(), node1);
 			
-//			if(!nodes.containsKey(node1.getId())) { // if it is new, add it
-//				if(!node1.hasUrl())
-//					node1 = createNode(row[PERSON1],row[PERSON1]+".html"); // add default URl
-//					
-//				nodes.put(node1.getId(), node1);				
-//			} else if(node1.hasUrl()) // if it has a URL update it
-//				nodes.put(node1.getId(), node1);
-
-			if(row[PERSON2].isBlank()) // if there is only one person
+			if(row[JUNIOR_PERSON].isBlank()) // if there is only one person
 				continue;
 			
-			node2 = createNode(row[PERSON2],row[PERSON2]+".html");
+			node2 = createNode(row[JUNIOR_PERSON]);
 			nodes.putIfAbsent(node2.getId(), node2);
 			
 			createRelationship(node1.getId(), node2.getId(), row[RELATIONSHIP]);
@@ -53,7 +39,8 @@ public abstract class RelationshipReader {
 		}
 	}
 	
-	protected abstract GraphNode createNode(String name, String url);
+//	protected abstract GraphNode createNode(String name, String url);
+	protected abstract GraphNode createNode(String name);
 	protected abstract void createRelationship(String id1, String id2, String relationship);
 
 	public List<GraphNode> getNodes() {

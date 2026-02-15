@@ -1,21 +1,47 @@
+import java.util.Map;
+
 public class GraphNode {
 	protected final String name;
 	protected final String url;
 	protected final String id;
 	
+	private final Map<Character,Character> remap = Map.of(
+			' ','_',
+			'\'','_',
+			'ō','o',
+			'ū','u'
+			);
+	
+	private String convertToId(String userName) {
+		int index=userName.indexOf('\n');
+		if(index>-1) {
+			userName = userName.substring(0,index);
+		}
+		index=userName.indexOf('(');
+		if(index>-1) {
+			userName = userName.substring(0,index);
+		}
+		userName=userName.trim();
+		
+		StringBuffer idBuffer = new StringBuffer();
+		char c;
+		for(int i=0;i<userName.length();i++) {
+			c=userName.charAt(i);
+			idBuffer.append(remap.getOrDefault(c,c));
+		}
+		return idBuffer.toString();	
+	}
+	
+	public GraphNode(String name) {
+		this.name = name;
+		this.id = convertToId(name);
+		this.url = id+".html";
+	}
+
 	public GraphNode(String name, String url) {
 		this.name = name;
+		this.id = convertToId(name);
 		this.url = url;
-		String id;
-
-		if(name.indexOf('\n')>-1) {
-			id = name.substring(0, name.indexOf('\n'));
-		} else if(name.indexOf('(')>-1) {
-			id = name.substring(0, name.indexOf('('));
-		} else {
-			id = name;
-		}
-		this.id = id.trim().replace(' ', '_').replace('\'','_');
 	}
 
 	public String getName() {
@@ -24,10 +50,6 @@ public class GraphNode {
 
 	public String getUrl() {
 		return url;
-	}
-
-	public String getShortUrl() {
-		return id.replace("_", "%20")+".html";
 	}
 
 	public String getId() {

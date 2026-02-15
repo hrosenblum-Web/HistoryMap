@@ -34,9 +34,9 @@ public class MermaidReader extends RelationshipReader {
 	}
 
 	@Override
-	protected GraphNode createNode(String name, String url) {
+	protected GraphNode createNode(String name) {
 		// TODO Auto-generated method stub
-		return new MermaidNode(name,url);
+		return new MermaidNode(name);
 	}
 
 }

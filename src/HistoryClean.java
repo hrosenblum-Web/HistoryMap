@@ -76,22 +76,22 @@ public class HistoryClean {
 		historyEntries.sort((s1,s2) -> clean(s1).compareTo(clean(s2)));
 
 		PrintStream out;
-		if(DEBUG) {
-			out=System.out;
-		} else {
-			try {
-				out = new PrintStream(new File(fileName));
-			} catch (FileNotFoundException e) {
-				System.out.println("Unable to open file: "+fileName);
+		try {
+			if(DEBUG) {
 				out=System.out;
+			} else {
+				out = new PrintStream(new File(fileName));
 			}
-		}
-		out.println(header);
-		for(String entry:historyEntries)
-			out.println(entry);
-		if(!DEBUG) {
-			out.close();
-			System.out.println(fileName+" saved");
+			out.println(header);
+			for(String entry:historyEntries)
+				out.println(entry);
+			if(!DEBUG) {
+				out.close();
+				System.out.println(fileName+" saved");
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("Unable to open file: "+fileName);
+			out=System.out;
 		}
 
 

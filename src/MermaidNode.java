@@ -8,9 +8,8 @@ public class MermaidNode extends GraphNode {
 		PATH=path;
 	}
 
-	public MermaidNode(String name, String url) {
-		super(name, url);
-		// TODO Auto-generated constructor stub
+	public MermaidNode(String name) {
+		super(name);
 	}
 
 	@Override
@@ -33,13 +32,13 @@ public class MermaidNode extends GraphNode {
 			sb.append(" stroke:blue,stroke-width:4px");
 		}
 		
-		String shortName =  id.replace('_', ' ');
-		File file = new File(PATH+"images\\"+shortName+".jpg");
+//		String shortName =  id.replace('_', ' ');
+		File file = new File(PATH+"Images\\"+id+".jpg");
 		if(file.exists()) {
 			sb.append("\n\t");
 			sb.append(id);
-			sb.append("@{ img: \"images/");
-			sb.append(shortName);
+			sb.append("@{ img: \"Images/");
+			sb.append(id);
 			sb.append(".jpg\", label: \"");
 			sb.append(name);
 			sb.append("\", pos: \"b\", h: 400, constraint: \"on\" }");

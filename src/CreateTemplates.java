@@ -5,14 +5,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
-import com.opencsv.exceptions.CsvValidationException;
 
-public class CreateTemplates {
+public class CreateTemplates implements HistoryFileProcessor{
 
 	public static void main(String[] args) {
 		String rootPath = "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
@@ -30,7 +28,7 @@ public class CreateTemplates {
 //		String name;
 
 		// Find all the external web pages
-		Map<String,String> external = new HashMap<>();
+		Map<String,GraphNode> external = new HashMap<>();
 //		File historyFile=new File(rootPath+"History.csv");
 
 		try {
@@ -38,9 +36,10 @@ public class CreateTemplates {
 			fileReader.readNext();  //ignore header
 
 			for(String[] columns : fileReader.readAll()) {
-				if(columns.length<4 || columns[3].isEmpty())
+				if(columns.length<4 || columns[SENIOR_URL].isEmpty())
 					continue;
-				external.put(columns[0], columns[3]);
+				GraphNode gn= new GraphNode(columns[SENIOR_PERSON], columns[SENIOR_URL]);
+				external.put(columns[SENIOR_PERSON], gn);
 			}
 
 		} catch (IOException | CsvException e1) {
@@ -55,9 +54,9 @@ public class CreateTemplates {
 		for(String relationshipFileName:relationshipFiles.list()) {
 			if(!relationshipFileName.endsWith(".html"))
 				continue;
-			pageFileName = relationshipFileName.replaceAll("_", " ");
-			pageFile = new File(rootPath+pageFileName);
-			String name = pageFileName.substring(0,pageFileName.length()-5);
+			pageFile = new File(rootPath+relationshipFileName);
+			String name = relationshipFileName.substring(0,relationshipFileName.length()-5).replaceAll("_", " ").trim();
+			String imageFileName = relationshipFileName.replace(".html", ".jpg");
 
 			if(!pageFile.exists()) {
 				change=true;
@@ -77,16 +76,16 @@ public class CreateTemplates {
 							+ "    <h2>"+name+" - ART (YEAR) COUNTRY</h2>\r\n"
 							+ "    <p><img alt=\"(no photo available)\"\r\n"
 							+ "         height=\"250\"\r\n"
-							+ "         src=\"Images/"+name+".jpg\"></p>\r\n"
+							+ "         src=\"Images/"+imageFileName+"\"></p>\r\n"
 							+ "    <p>put information here</p>\r\n");
 
-					timelineFile = new File(timelinePath+name+" Timeline.html");
+					timelineFile = new File(timelinePath+relationshipFileName);
 					if(timelineFile.exists())
-						out.print("    <p><a href=\"Timeline/"+name+"%20Timeline.html\"\r\n"
+						out.print("    <p><a href=\"Timeline/"+relationshipFileName+"\"\r\n"
 								+ "       target=\"_blank\">"+name+" Timeline</a></p>\r\n");
 
 					if(external.containsKey(name)) {
-						String page=external.get(name);
+						String page=external.get(name).getUrl();
 						if(!page.contains("wikipedia"))
 							out.print("    <p><a href=\""+page+"\"\r\n"
 									+ "       target=\"_blank\">"+name+" External link</a></p>\r\n");
@@ -100,7 +99,7 @@ public class CreateTemplates {
 							+ "</body>\r\n"
 							+ "</html>\r\n");
 					out.close();
-					System.out.println(pageFileName+" created");
+					System.out.println(relationshipFileName+" created");
 
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -110,8 +109,9 @@ public class CreateTemplates {
 		}
 		System.out.println("-------------------------------------");
 		for(String name:external.keySet()) {
-			pageFileName = name+".html";
+			pageFileName = external.get(name).getId()+".html";
 			pageFile = new File(rootPath+pageFileName);
+			String imageFileName = pageFileName.replace(".html", ".jpg");
 			if(!pageFile.exists()) {
 				change=true;
 				try {
@@ -130,16 +130,16 @@ public class CreateTemplates {
 							+ "    <h2>"+name+" - ART (YEAR) COUNTRY</h2>\r\n"
 							+ "    <p><img alt=\"(no photo available)\"\r\n"
 							+ "         height=\"250\"\r\n"
-							+ "         src=\"Images/"+name+".jpg\"></p>\r\n"
+							+ "         src=\"Images/"+imageFileName+"\"></p>\r\n"
 							+ "    <p>put information here</p>\r\n");
 
-					timelineFile = new File(timelinePath+name+" Timeline.html");
+					timelineFile = new File(timelinePath+pageFileName);
 					if(timelineFile.exists())
-						out.print("    <p><a href=\"Timeline/"+name+"%20Timeline.html\"\r\n"
+						out.print("    <p><a href=\"Timeline/"+pageFileName+"\"\r\n"
 								+ "       target=\"_self\">"+name+" Timeline</a></p>\r\n");
 
 					if(external.containsKey(name)) {
-						String page=external.get(name);
+						String page=external.get(name).getUrl();
 						if(!page.contains("wikipedia"))
 							out.print("    <p><a href=\""+page+"\"\r\n"
 									+ "       target=\"_blank\">"+name+" External link</a></p>\r\n");
@@ -148,7 +148,7 @@ public class CreateTemplates {
 									+ "       target=\"_blank\">"+name+" Wikipedia entry</a></p>\r\n");
 					}
 
-					out.print("    <iframe src=\"Relationships/"+pageFileName.replace(" ", "_")+"\" width=\"1000\" height=\"500\" title=\"TEST\">This is a test</iframe> \r\n"
+					out.print("    <iframe src=\"Relationships/"+pageFileName+"\" width=\"1000\" height=\"500\" title=\"TEST\">This is a test</iframe> \r\n"
 							+ "    <p><button onclick=\"goBack()\">Go Back</button></p>\r\n"
 							+ "</body>\r\n"
 							+ "</html>\r\n");
@@ -174,8 +174,8 @@ public class CreateTemplates {
 		for(String rootFileName:rootFiles.list()) {
 			if(!rootFileName.endsWith(".html"))
 				continue;
-			pageFileName = rootFileName.replaceAll(" ", "_");
-			pageFile = new File(relationshipPath+pageFileName);
+//			pageFileName = rootFileName.replaceAll(" ", "_");
+			pageFile = new File(relationshipPath+rootFileName); // the root and relationship file names are the same just in different directories
 			String name = rootFileName.substring(0,rootFileName.length()-5);
 
 			if(!pageFile.exists()) {
@@ -192,7 +192,7 @@ public class CreateTemplates {
 							+ "</body>\r\n"
 							+ "</html>\r\n");
 					out.close();
-					System.out.println(pageFileName+" created");
+					System.out.println(rootFileName+" created");
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

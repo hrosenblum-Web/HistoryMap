@@ -23,8 +23,8 @@ public class SimpleReader extends RelationshipReader {
 	}
 
 	@Override
-	protected GraphNode createNode(String name, String url) {
-		return new GraphNode(name,url);
+	protected GraphNode createNode(String name) {
+		return new GraphNode(name);
 	}
 
 	@Override
@@ -38,6 +38,9 @@ public class SimpleReader extends RelationshipReader {
 
 		if(relationship.equals("Maybe"))
 			relationship+=" taught by";
+
+		if(relationship.equals("Family"))
+			relationship="Earlier generation";
 
 		relationships = relationshipMap.getOrDefault(id2, new HashMap<>());
 		ids = relationships.getOrDefault(relationship,new ArrayList<>());
@@ -53,6 +56,9 @@ public class SimpleReader extends RelationshipReader {
 
 		if(relationship.equals("Trained by"))
 			relationship="Trained";
+
+		if(relationship.equals("Earlier generation"))
+			relationship="Later generation";
 
 		relationships = relationshipMap.getOrDefault(id1, new HashMap<>());
 		ids = relationships.getOrDefault(relationship,new ArrayList<>());
@@ -71,7 +77,7 @@ public class SimpleReader extends RelationshipReader {
 				+ "<body>\n");
 		for(String personId:personIds) {
 			System.out.println("\t<h2>"+personId+"</h2>");
-			printData(personId,System.out);
+			printTextData(personId,System.out);
 		}
 		System.out.println("</body>\n"
 				+ "</html>");
@@ -82,15 +88,15 @@ public class SimpleReader extends RelationshipReader {
 		for(String personId:personIds) {
 			try {
 				PrintStream out=new PrintStream(new File(PATH+personId+".html"));
-				out.println("<!DOCTYPE html>\n"
-						+ "<html>\n"
-						+ "<head>\n"
-						+ "\t<title>"+personId+" Relationships</title>\n"
-						+ "</head>\n"
-						+ "<body>\n");
-				printData(personId,out);
-				out.println("</body>\n"
-						+ "</html>");
+				//				out.println("<!DOCTYPE html>\n"
+				//						+ "<html>\n"
+				//						+ "<head>\n"
+				//						+ "\t<title>"+personId+" Relationships</title>\n"
+				//						+ "</head>\n"
+				//						+ "<body>\n");
+				printChartData(personId,out);
+				//				out.println("</body>\n"
+				//						+ "</html>");
 				out.close();
 				System.out.println(PATH+personId+".html created");
 			} catch (FileNotFoundException e) {
@@ -101,7 +107,7 @@ public class SimpleReader extends RelationshipReader {
 
 	}
 
-	private void printData(String personId,PrintStream out) {
+	private void printTextData(String personId,PrintStream out) {
 		Map<String, List<String>> relationships=relationshipMap.get(personId);
 		for(String relationship : relationships.keySet()) {
 			out.println("\t<h3>"+relationship+"</h3>");
@@ -115,7 +121,7 @@ public class SimpleReader extends RelationshipReader {
 					if(gn.getUrl().startsWith("http"))
 						url=gn.getUrl();
 					else
-						url = "../"+gn.getShortUrl();
+						url = "../"+gn.getUrl();
 					out.print("<a href=\""+url+"\" target=\"_parent\">"+name+"</a>");
 				} else
 					out.print(name);
@@ -123,6 +129,68 @@ public class SimpleReader extends RelationshipReader {
 			}
 			out.println("\t</ul>");
 		}
+	}
+
+	private void printChartData(String personId,PrintStream out) {
+		out.println(""
+				+ "<div style=\"border:1px solid;width:1800px;overflow:auto;\">\n"
+				+"   <pre class=\"mermaid\">\n"
+				+"      %%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%\n"
+				+"      flowchart LR\n");
+
+		Map<String, List<String>> relationships=relationshipMap.get(personId);
+		GraphNode gn = nodes.get(personId);
+		out.printf("      %s((%s))%n",personId,gn.getName());
+		boolean rightArrow;
+		for(String relationship : relationships.keySet()) {
+			out.printf("%n      %%%% %s relationships%n", relationship);
+			if(relationship.equalsIgnoreCase("sensei") ||
+					relationship.equalsIgnoreCase("Maybe taught by") ||
+					relationship.equalsIgnoreCase("Trained by") ||
+					relationship.equalsIgnoreCase("Earlier generation"))
+				rightArrow=false;
+			else 
+				rightArrow=true;
+			String relationshipId=relationship.replace(" ", "_");
+			if(!relationshipId.equals(relationship))
+				out.printf("      %s[%s]%n",relationshipId,relationship);
+			if(rightArrow)
+				out.printf("      %s --> %s%n",personId,relationshipId);
+			else
+				out.printf("      %s --> %s%n",relationshipId,personId);
+			//			out.println("\t<h3>"+relationship+"</h3>");
+			//			out.println("\t<ul>");
+			for(String person:relationships.get(relationship)) {
+				gn = nodes.get(person);
+				String name = gn.getName().replace("(", "").replace(")", "");
+				if(rightArrow)
+					out.printf("      %s --> %s%n",relationshipId,person);
+				else
+				out.printf("      %s --> %s%n",person,relationshipId);				
+				out.printf("      %s([%s])%n",person,name);
+
+				//				out.print("\t\t<li>");
+				if(gn.hasUrl()) {
+					String url;
+					if(gn.getUrl().startsWith("http"))
+						url=gn.getUrl();
+					else
+						url = "../"+gn.getUrl();
+					//					out.print("<a href=\""+url+"\" target=\"_parent\">"+name+"</a>");
+					out.printf("      click %s \"%s\" _top%n",person,url);
+				} else
+					out.print(name);
+				//				out.println("</li>");
+			}
+			//			out.println("\t</ul>");
+		}
+		out.println(""
+				+ "   </pre>\n"
+				+ "</div>\n"
+				+ "<script type=\"module\">\n"
+				+ "   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';\n"
+				+ "   mermaid.initialize({ startOnLoad: true });\n"
+				+ "</script>");
 	}
 
 }
