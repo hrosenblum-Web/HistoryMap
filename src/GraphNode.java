@@ -1,15 +1,24 @@
+import java.io.File;
 import java.util.Map;
 
 public class GraphNode {
 	protected final String name;
 	protected final String url;
 	protected final String id;
+	protected final boolean hasImage;
+	
+	private static String PATH;
+	
+	public static void setPath(String path) {
+		PATH=path;
+	}
 	
 	private final Map<Character,Character> remap = Map.of(
 			' ','_',
 			'\'','_',
 			'ō','o',
-			'ū','u'
+			'ū','u',
+			'é','e'
 			);
 	
 	private String convertToId(String userName) {
@@ -36,12 +45,16 @@ public class GraphNode {
 		this.name = name;
 		this.id = convertToId(name);
 		this.url = id+".html";
+		File file = new File(PATH+"Images\\"+id+".jpg");
+		hasImage = file.exists();
 	}
 
 	public GraphNode(String name, String url) {
 		this.name = name;
 		this.id = convertToId(name);
 		this.url = url;
+		File file = new File(PATH+"Images\\"+id+".jpg");
+		hasImage = file.exists();
 	}
 
 	public String getName() {
@@ -56,10 +69,17 @@ public class GraphNode {
 		return id;
 	}
 
+	public String getImage() {
+		return "Images/"+id+".jpg";
+	}
+	
 	public boolean hasUrl() {
 		return !url.equals("");
 	}
 
+	public boolean hasImage() {
+		return hasImage;
+	}
 
 //	public boolean hasMoreData(int i) {
 //		return (name.length()>id.length() || hasUrl());

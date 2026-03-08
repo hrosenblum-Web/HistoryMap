@@ -25,20 +25,27 @@ public class CreateTemplates implements HistoryFileProcessor{
 		File timelineFile;
 
 		PrintStream out;
-//		String name;
+		//		String name;
 
 		// Find all the external web pages
 		Map<String,GraphNode> external = new HashMap<>();
-//		File historyFile=new File(rootPath+"History.csv");
+		Map<String,String> nameLookup = new HashMap<>();
+		//		File historyFile=new File(rootPath+"History.csv");
 
 		try {
 			CSVReader fileReader = new CSVReaderBuilder(new FileReader(rootPath+"History.csv")).build();
 			fileReader.readNext();  //ignore header
 
 			for(String[] columns : fileReader.readAll()) {
+				GraphNode gn= new GraphNode(columns[SENIOR_PERSON]);
+				nameLookup.putIfAbsent(gn.getId(), gn.getName());
+				if(!columns[JUNIOR_PERSON].isEmpty()) {
+					gn= new GraphNode(columns[JUNIOR_PERSON]);
+					nameLookup.putIfAbsent(gn.getId(), gn.getName());
+				}
 				if(columns.length<4 || columns[SENIOR_URL].isEmpty())
 					continue;
-				GraphNode gn= new GraphNode(columns[SENIOR_PERSON], columns[SENIOR_URL]);
+				gn= new GraphNode(columns[SENIOR_PERSON], columns[SENIOR_URL]);
 				external.put(columns[SENIOR_PERSON], gn);
 			}
 
@@ -55,8 +62,9 @@ public class CreateTemplates implements HistoryFileProcessor{
 			if(!relationshipFileName.endsWith(".html"))
 				continue;
 			pageFile = new File(rootPath+relationshipFileName);
-			String name = relationshipFileName.substring(0,relationshipFileName.length()-5).replaceAll("_", " ").trim();
-			String imageFileName = relationshipFileName.replace(".html", ".jpg");
+			String id = relationshipFileName.substring(0,relationshipFileName.length()-5);
+			String name = nameLookup.get(id);
+			String imageFileName = id+".jpg";
 
 			if(!pageFile.exists()) {
 				change=true;
@@ -82,7 +90,7 @@ public class CreateTemplates implements HistoryFileProcessor{
 					timelineFile = new File(timelinePath+relationshipFileName);
 					if(timelineFile.exists())
 						out.print("    <p><a href=\"Timeline/"+relationshipFileName+"\"\r\n"
-								+ "       target=\"_blank\">"+name+" Timeline</a></p>\r\n");
+								+ "       target=\"_self\">"+name+" Timeline</a></p>\r\n");
 
 					if(external.containsKey(name)) {
 						String page=external.get(name).getUrl();
@@ -161,7 +169,7 @@ public class CreateTemplates implements HistoryFileProcessor{
 				}
 			}
 		}
-		
+
 		if(!change) 
 			System.out.println("No changes");
 		else
@@ -174,7 +182,7 @@ public class CreateTemplates implements HistoryFileProcessor{
 		for(String rootFileName:rootFiles.list()) {
 			if(!rootFileName.endsWith(".html"))
 				continue;
-//			pageFileName = rootFileName.replaceAll(" ", "_");
+			//			pageFileName = rootFileName.replaceAll(" ", "_");
 			pageFile = new File(relationshipPath+rootFileName); // the root and relationship file names are the same just in different directories
 			String name = rootFileName.substring(0,rootFileName.length()-5);
 
