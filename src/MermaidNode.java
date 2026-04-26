@@ -2,12 +2,12 @@ import java.io.File;
 
 public class MermaidNode extends GraphNode {
 
-	private static String PATH ;
-
-	public static void setPath(String path) {
-		PATH=path;
-	}
-
+//	private static String PATH ;
+//
+//	public static void setPath(String path) {
+//		PATH=path;
+//	}
+//
 	public MermaidNode(String name) {
 		super(name);
 	}

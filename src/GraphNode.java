@@ -7,7 +7,7 @@ public class GraphNode {
 	protected final String id;
 	protected final boolean hasImage;
 	
-	private static String PATH;
+	protected static String PATH;
 	
 	public static void setPath(String path) {
 		PATH=path;

@@ -12,7 +12,12 @@ public class ConvertIframe {
 		String path ="C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		File dir = new File(path);
 		int convertCounter=0;
-		for(File mainFile: dir.listFiles()) {
+		File[] dirFiles = dir.listFiles();
+		if(dirFiles == null) {
+			System.err.printf("ConvertIframe.main: %s directory is empty%n",dir.getAbsolutePath());
+			return;
+		}
+		for(File mainFile: dirFiles) {
 			String name=mainFile.getAbsolutePath();
 			if(!name.endsWith(".html")) continue;
 

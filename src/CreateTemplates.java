@@ -58,7 +58,12 @@ public class CreateTemplates implements HistoryFileProcessor{
 
 		// Create missing template main page for all relationships
 		System.out.println("Create template main pages");
-		for(String relationshipFileName:relationshipFiles.list()) {
+		String[] dirStrings = relationshipFiles.list();
+		if(dirStrings==null) {
+			System.err.printf("CreateTemplates.main: %s directory is empty%n",relationshipFiles.getAbsolutePath());
+			return;			
+		}
+		for(String relationshipFileName : dirStrings) {
 			if(!relationshipFileName.endsWith(".html"))
 				continue;
 			pageFile = new File(rootPath+relationshipFileName);
@@ -179,7 +184,12 @@ public class CreateTemplates implements HistoryFileProcessor{
 		File rootFiles = new File(rootPath);
 		// Create missing template relationship page for all root files
 		System.out.println("\nCreate template relationship pages");
-		for(String rootFileName:rootFiles.list()) {
+		String[] dirRootStrings = relationshipFiles.list();
+		if(dirRootStrings==null) {
+			System.err.printf("CreateTemplates.main: %s directory is empty%n",relationshipFiles.getAbsolutePath());
+			return;			
+		}
+		for(String rootFileName : dirRootStrings) {
 			if(!rootFileName.endsWith(".html"))
 				continue;
 			//			pageFileName = rootFileName.replaceAll(" ", "_");

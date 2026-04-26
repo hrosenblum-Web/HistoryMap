@@ -24,7 +24,12 @@ public class SanityTest {
 	 * @param dir
 	 */
 	public static void recursiveCheck(File dir) {
-		for(File file : dir.listFiles()) {
+		File[] dirFiles = dir.listFiles();
+		if(dirFiles == null) {
+			System.err.printf("SanityTest.recursiveCheck: %s is empty directory%n",dir.getAbsolutePath());
+			return;
+		}
+		for(File file : dirFiles) {
 			if(file.isDirectory()) {
 				recursiveCheck(file);
 			} else {
