@@ -17,27 +17,20 @@ public class HistoryRelationships {
 	 * Entry point for the relationship page generation stage. When {@code DEBUG}
 	 * is {@code true}, prints all relationships to stdout instead of saving files.
 	 *
-	 * @param args unused
+	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path ="C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
-		SimpleReader.setPath(path);
-		SimpleReader sr;
+		String path = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		try {
-			sr = new SimpleReader(path+"History.csv");
-			if(DEBUG)
+			SimpleReader sr = new SimpleReader(path + "History.csv", path);
+			sr.load();
+			if (DEBUG)
 				sr.print();
 			else
 				sr.save();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CsvException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | CsvException e) {
+			throw new RuntimeException("HistoryRelationships failed: " + e.getMessage(), e);
 		}
 	}
 
 }
-
-

@@ -17,49 +17,59 @@ import com.opencsv.exceptions.CsvException;
  * {@link #createRelationship(String, String, String)} to produce output in a
  * specific format (Mermaid syntax, HTML, etc.) without duplicating CSV parsing
  * logic.
+ *
+ * <p>Construction stores the filename; call {@link #load()} to trigger parsing.
+ * Separating construction from parsing allows subclass instance fields to be
+ * fully initialized before any abstract methods are invoked.
  */
 public abstract class RelationshipReader implements HistoryFileProcessor {
 
-	private CSVReader fileReader;
+	private final String fileName;
 	/** People encountered in the CSV, keyed by their sanitized ID. */
 	protected Map<String, GraphNode> nodes = new HashMap<>();
 	/** Relationship strings in the format produced by the subclass. */
 	protected List<String> relationships = new ArrayList<>();
 
 	/**
+	 * Stores the CSV filename. Call {@link #load()} to parse it.
+	 *
+	 * @param fileName absolute path to {@code History.csv}
+	 */
+	public RelationshipReader(String fileName) {
+		this.fileName = fileName;
+	}
+
+	/**
 	 * Reads the CSV file, skipping the header row, and populates {@link #nodes}
 	 * and {@link #relationships} by delegating to the abstract factory methods.
 	 * Rows with fewer than three columns are silently skipped.
 	 *
-	 * @param fileName absolute path to {@code History.csv}
 	 * @throws IOException  if the file cannot be read
 	 * @throws CsvException if the CSV is malformed
 	 */
-	public RelationshipReader(String fileName) throws IOException, CsvException {
+	public void load() throws IOException, CsvException {
+		try (CSVReader fileReader = new CSVReaderBuilder(new FileReader(fileName)).build()) {
+			fileReader.readNext(); // ignore header
 
-		GraphNode node1, node2;
-		fileReader = new CSVReaderBuilder(new FileReader(fileName)).build();
-		fileReader.readNext();  //ignore header
+			for (String[] row : fileReader.readAll()) {
+				if (row.length < 3)
+					continue;
+				GraphNode node1 = createNode(row[SENIOR_PERSON]);
+				// putIfAbsent so that a person who appears in multiple rows keeps the
+				// node created from their first occurrence rather than being overwritten.
+				nodes.putIfAbsent(node1.getId(), node1);
 
-		for (String[] row : fileReader.readAll()) {
-			if (row.length < 3)
-				continue;
-			node1 = createNode(row[SENIOR_PERSON]);
-			// putIfAbsent so that a person who appears in multiple rows keeps the
-			// node created from their first occurrence rather than being overwritten.
-			nodes.putIfAbsent(node1.getId(), node1);
+				if (row[JUNIOR_PERSON].isBlank()) // standalone entry with no relationship
+					continue;
 
-			if (row[JUNIOR_PERSON].isBlank()) // standalone entry with no relationship
-				continue;
+				GraphNode node2 = createNode(row[JUNIOR_PERSON]);
+				// catch the case where the only mention of the person is only as a junior person
+				nodes.putIfAbsent(node2.getId(), node2);
 
-			node2 = createNode(row[JUNIOR_PERSON]);
-			nodes.putIfAbsent(node2.getId(), node2);
-
-			createRelationship(node1.getId(), node2.getId(), row[RELATIONSHIP]);
+				createRelationship(node1.getId(), node2.getId(), row[RELATIONSHIP]);
+			}
 		}
 	}
-
-//	protected abstract GraphNode createNode(String name, String url);
 
 	/**
 	 * Factory method: creates the appropriate {@link GraphNode} subtype for a

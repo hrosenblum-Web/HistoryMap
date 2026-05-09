@@ -21,42 +21,38 @@ public class HistoryGraph {
 	 * the configured path. When {@code DEBUG} is {@code true}, output goes to
 	 * stdout instead of the file.
 	 *
-	 * @param args unused
+	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path ="C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+		String path = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		try {
-			MermaidNode.setPath(path);
-			RelationshipReader rr = new MermaidReader(path+"History.csv");
+			GraphNode.setPath(path);
+			RelationshipReader rr = new MermaidReader(path + "History.csv");
+			rr.load();
+
 			PrintStream out;
-			if(DEBUG)
+			if (DEBUG)
 				out = System.out;
 			else {
-				File file = new File(path+"index.html");
+				File file = new File(path + "index.html");
 				out = new PrintStream(file);
 			}
-			GraphWriter gw = new  MermaidWriter(out);
+			GraphWriter gw = new MermaidWriter(out);
 
 			List<GraphNode> names = rr.getNodes();
 			gw.writeNames(names);
-
 
 			List<String> relationships = rr.getRelationships();
 			gw.writeRelationships(relationships);
 
 			gw.close();
-			if(!DEBUG) {
-			out.close();
-			System.out.println("file "+path+"index.html created");
+			if (!DEBUG) {
+				out.close();
+				System.out.println("file " + path + "index.html created");
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CsvException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | CsvException e) {
+			throw new RuntimeException("HistoryGraph failed: " + e.getMessage(), e);
 		}
-
 	}
 
 }

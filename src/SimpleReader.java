@@ -20,17 +20,20 @@ import com.opencsv.exceptions.CsvException;
  */
 public class SimpleReader extends RelationshipReader {
 	/** Nested map: personId → (relationshipLabel → list of related personIds). */
-	private static Map<String, Map<String, List<String>>> relationshipMap = new HashMap<>();
-	private static String PATH;
+	private Map<String, Map<String, List<String>>> relationshipMap = new HashMap<>();
+	private String path;
 
 	/**
-	 * Sets the base path, initializes {@link GraphNode#PATH}, and creates the
-	 * {@code Relationships/} subdirectory if it does not already exist.
+	 * Constructs a reader for the given CSV file and configures output paths.
+	 * Creates the {@code Relationships/} subdirectory if it does not already exist.
+	 * Call {@link #load()} to parse the CSV.
 	 *
-	 * @param path absolute base path ending with a backslash
+	 * @param fileName absolute path to {@code History.csv}
+	 * @param path     absolute base path ending with a backslash
 	 */
-	public static void setPath(String path) {
-		PATH = path + "Relationships\\";
+	public SimpleReader(String fileName, String path) {
+		super(fileName);
+		this.path = path + "Relationships\\";
 		GraphNode.setPath(path);
 		File file = new File(path + "Relationships");
 		if (!file.exists()) {
@@ -39,17 +42,6 @@ public class SimpleReader extends RelationshipReader {
 			else
 				System.err.println("Unable to create " + file.getAbsolutePath());
 		}
-	}
-
-	/**
-	 * Parses the given CSV file and populates the bidirectional relationship map.
-	 *
-	 * @param fileName absolute path to {@code History.csv}
-	 * @throws IOException  if the file cannot be read
-	 * @throws CsvException if the CSV is malformed
-	 */
-	public SimpleReader(String fileName) throws IOException, CsvException {
-		super(fileName);
 	}
 
 	/**
@@ -74,46 +66,46 @@ public class SimpleReader extends RelationshipReader {
 	 */
 	@Override
 	protected void createRelationship(String id1, String id2, String relationship) {
-		Map<String,List<String>> relationships;
+		Map<String, List<String>> relationships;
 		List<String> ids;
 		// Capitalize so labels display consistently regardless of CSV casing.
-		relationship = relationship.toUpperCase().charAt(0)+relationship.substring(1);
+		relationship = relationship.toUpperCase().charAt(0) + relationship.substring(1);
 
 		// Expand abbreviated labels that OpenCSV may split on whitespace.
-		if(relationship.equals("Trained"))
-			relationship+=" by";
+		if (relationship.equals("Trained"))
+			relationship += " by";
 
-		if(relationship.equals("Maybe"))
-			relationship+=" taught by";
+		if (relationship.equals("Maybe"))
+			relationship += " taught by";
 
 		// "Family" is ambiguous — disambiguate by direction before storing.
-		if(relationship.equals("Family"))
-			relationship="Earlier generation";
+		if (relationship.equals("Family"))
+			relationship = "Earlier generation";
 
 		// Store id1 under id2's entry using the as-written label (senior's perspective).
 		// e.g. for row "Ueshiba, Tohei, Sensei": Tohei's page lists Ueshiba as "Sensei".
 		relationships = relationshipMap.getOrDefault(id2, new HashMap<>());
-		ids = relationships.getOrDefault(relationship,new ArrayList<>());
+		ids = relationships.getOrDefault(relationship, new ArrayList<>());
 		ids.add(id1);
 		relationships.put(relationship, ids);
 		relationshipMap.put(id2, relationships);
 
 		// Flip the label before storing the reverse direction (junior's perspective).
 		// e.g. Ueshiba's page lists Tohei as "Deshi".
-		if(relationship.equals("Sensei"))
-			relationship="Deshi";
+		if (relationship.equals("Sensei"))
+			relationship = "Deshi";
 
-		if(relationship.equals("Maybe taught by"))
-			relationship="Maybe taught";
+		if (relationship.equals("Maybe taught by"))
+			relationship = "Maybe taught";
 
-		if(relationship.equals("Trained by"))
-			relationship="Trained";
+		if (relationship.equals("Trained by"))
+			relationship = "Trained";
 
-		if(relationship.equals("Earlier generation"))
-			relationship="Later generation";
+		if (relationship.equals("Earlier generation"))
+			relationship = "Later generation";
 
 		relationships = relationshipMap.getOrDefault(id1, new HashMap<>());
-		ids = relationships.getOrDefault(relationship,new ArrayList<>());
+		ids = relationships.getOrDefault(relationship, new ArrayList<>());
 		ids.add(id2);
 		relationships.put(relationship, ids);
 		relationshipMap.put(id1, relationships);
@@ -124,16 +116,16 @@ public class SimpleReader extends RelationshipReader {
 	 * Intended for debug use; {@link #save()} is the production equivalent.
 	 */
 	public void print() {
-		Set<String> personIds=relationshipMap.keySet();
+		Set<String> personIds = relationshipMap.keySet();
 		System.out.println("<!DOCTYPE html>\n"
 				+ "<html>\n"
 				+ "<head>\n"
 				+ "\t<title>Relationship summary</title>\n"
 				+ "</head>\n"
 				+ "<body>\n");
-		for(String personId:personIds) {
-			System.out.println("\t<h2>"+personId+"</h2>");
-			printTextData(personId,System.out);
+		for (String personId : personIds) {
+			System.out.println("\t<h2>" + personId + "</h2>");
+			printTextData(personId, System.out);
 		}
 		System.out.println("</body>\n"
 				+ "</html>");
@@ -144,38 +136,36 @@ public class SimpleReader extends RelationshipReader {
 	 * directory. Each file is named {@code <id>.html}.
 	 */
 	public void save() {
-		Set<String> personIds=relationshipMap.keySet();
-		for(String personId:personIds) {
+		Set<String> personIds = relationshipMap.keySet();
+		for (String personId : personIds) {
 			try {
-				PrintStream out=new PrintStream(new File(PATH+personId+".html"));
-				printChartData(personId,out);
+				PrintStream out = new PrintStream(new File(path + personId + ".html"));
+				printChartData(personId, out);
 				out.close();
-				System.out.println(PATH+personId+".html created");
+				System.out.println(path + personId + ".html created");
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new RuntimeException("Failed to write relationship page for " + personId, e);
 			}
 		}
-
 	}
 
-	private void printTextData(String personId,PrintStream out) {
+	private void printTextData(String personId, PrintStream out) {
 		out.println("<!DOCTYPE html>\n"
 				+ "<html>\n"
 				+ "<head>\n"
-				+ "\t<title>"+personId+" Relationships</title>\n"
+				+ "\t<title>" + personId + " Relationships</title>\n"
 				+ "</head>\n"
 				+ "<body>\n");
-		Map<String, List<String>> relationships=relationshipMap.get(personId);
-		for(String relationship : relationships.keySet()) {
-			out.println("\t<h3>"+relationship+"</h3>");
+		Map<String, List<String>> relationships = relationshipMap.get(personId);
+		for (String relationship : relationships.keySet()) {
+			out.println("\t<h3>" + relationship + "</h3>");
 			out.println("\t<ul>");
-			for(String person:relationships.get(relationship)) {
+			for (String person : relationships.get(relationship)) {
 				GraphNode gn = nodes.get(person);
 				String name = gn.getName().replaceAll("\n", " ");
 				out.print("\t\t<li>");
-				if(gn.hasUrl()) {
-					out.print("<a href=\""+gn.getUrl()+"\" target=\"_parent\">"+name+"</a>");
+				if (gn.hasUrl()) {
+					out.print("<a href=\"" + gn.getUrl() + "\" target=\"_parent\">" + name + "</a>");
 				} else
 					out.print(name);
 				out.println("</li>");
@@ -186,60 +176,61 @@ public class SimpleReader extends RelationshipReader {
 				+ "</html>");
 	}
 
-	private void printChartData(String personId,PrintStream out) {
+	private void printChartData(String personId, PrintStream out) {
 		out.println(""
-				//				+ "<div style=\"border:1px solid;width:1800px;overflow:auto;\">\n"
 				+ "<div>\n"
 				+ "  <hr/>\n"
 				+ "  <h3>Relationship Chart</h3>\n"
-				+"   <pre class=\"mermaid\">\n"
-				+"      %%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%\n"
-				+"      flowchart LR\n");
+				+ "   <pre class=\"mermaid\">\n"
+				+ "      %%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%\n"
+				+ "      flowchart LR\n");
 
-		Map<String, List<String>> relationships=relationshipMap.get(personId);
+		Map<String, List<String>> relationships = relationshipMap.get(personId);
 		GraphNode gn = nodes.get(personId);
-		out.printf("      %s((%s))%n",personId,cleanName(gn.getName()));
-		if(gn.hasImage()) {
-			out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n",gn.getId(),gn.getImage(),gn.getName());				}
+		out.printf("      %s((%s))%n", personId, cleanName(gn.getName()));
+		if (gn.hasImage()) {
+			out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
+		}
 		boolean rightArrow;
-		for(String relationship : relationships.keySet()) {
+		for (String relationship : relationships.keySet()) {
 			out.printf("%n      %%%% %s relationships%n", relationship);
 			// Arrow points toward the subject when the relationship is "incoming"
 			// (the subject is the junior/recipient). For outgoing relationships the
 			// subject points outward to the relationship node.
-			if(relationship.equalsIgnoreCase("sensei") ||
+			if (relationship.equalsIgnoreCase("sensei") ||
 					relationship.equalsIgnoreCase("Maybe taught by") ||
 					relationship.equalsIgnoreCase("Trained by") ||
 					relationship.equalsIgnoreCase("Earlier generation"))
-				rightArrow=false;
+				rightArrow = false;
 			else
-				rightArrow=true;
+				rightArrow = true;
 			// Mermaid node IDs cannot contain spaces; replace with underscores.
-			String relationshipId=relationship.replace(" ", "_");
+			String relationshipId = relationship.replace(" ", "_");
 			// Only emit a labelled node declaration when the ID was changed; single-word
 			// relationship types are used as their own label implicitly.
-			if(!relationshipId.equals(relationship))
-				out.printf("      %s[%s]%n",relationshipId,relationship);
-			if(rightArrow)
-				out.printf("      %s --> %s%n",personId,relationshipId);
+			if (!relationshipId.equals(relationship))
+				out.printf("      %s[%s]%n", relationshipId, relationship);
+			if (rightArrow)
+				out.printf("      %s --> %s%n", personId, relationshipId);
 			else
-				out.printf("      %s --> %s%n",relationshipId,personId);
-			for(String person:relationships.get(relationship)) {
+				out.printf("      %s --> %s%n", relationshipId, personId);
+			for (String person : relationships.get(relationship)) {
 				gn = nodes.get(person);
 				String name = cleanName(gn.getName());
-				if(rightArrow)
-					out.printf("      %s --> %s%n",relationshipId,person);
+				if (rightArrow)
+					out.printf("      %s --> %s%n", relationshipId, person);
 				else
-					out.printf("      %s --> %s%n",person,relationshipId);
-				out.printf("      %s([%s])%n",person,name);
+					out.printf("      %s --> %s%n", person, relationshipId);
+				out.printf("      %s([%s])%n", person, name);
 
-				if(gn.hasUrl()) 
-					out.printf("      click %s \"%s\" _top%n",person,gn.getUrl());
+				if (gn.hasUrl())
+					out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
 				else
 					out.print(name);
-				
-				if(gn.hasImage()) {
-					out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n",gn.getId(),gn.getImage(),gn.getName());				}
+
+				if (gn.hasImage()) {
+					out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
+				}
 			}
 		}
 		out.println(""
@@ -257,5 +248,3 @@ public class SimpleReader extends RelationshipReader {
 	}
 
 }
-
-

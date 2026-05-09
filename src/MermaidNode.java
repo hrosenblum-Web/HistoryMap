@@ -1,5 +1,3 @@
-import java.io.File;
-
 /**
  * A {@link GraphNode} that serializes itself as Mermaid.js flowchart syntax.
  *
@@ -40,7 +38,7 @@ public class MermaidNode extends GraphNode {
 		sb.append("[\"");
 		sb.append(name);
 		sb.append("\"]");
-		if(hasUrl()) {
+		if (hasUrl()) {
 			// Mermaid click directive opens the URL in a new tab.
 			sb.append("\n\tclick ");
 			sb.append(id);
@@ -54,8 +52,7 @@ public class MermaidNode extends GraphNode {
 		}
 
 //		String shortName =  id.replace('_', ' ');
-		File file = new File(PATH+"Images\\"+id+".jpg");
-		if(file.exists()) {
+		if (hasImage()) {
 			// @{ } is Mermaid's node metadata syntax for attaching an image below the label.
 			sb.append("\n\t");
 			sb.append(id);

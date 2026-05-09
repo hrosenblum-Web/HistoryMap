@@ -1,7 +1,3 @@
-import java.io.IOException;
-
-import com.opencsv.exceptions.CsvException;
-
 /**
  * A {@link RelationshipReader} that produces Mermaid.js flowchart edge syntax.
  *
@@ -16,13 +12,11 @@ import com.opencsv.exceptions.CsvException;
 public class MermaidReader extends RelationshipReader {
 
 	/**
-	 * Parses the given CSV file and produces Mermaid node and edge definitions.
+	 * Constructs a reader for the given CSV file. Call {@link #load()} to parse it.
 	 *
 	 * @param fileName absolute path to {@code History.csv}
-	 * @throws IOException  if the file cannot be read
-	 * @throws CsvException if the CSV is malformed
 	 */
-	public MermaidReader(String fileName) throws IOException, CsvException {
+	public MermaidReader(String fileName) {
 		super(fileName);
 	}
 
