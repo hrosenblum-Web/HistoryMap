@@ -45,13 +45,16 @@ public class ConvertIframe {
 					String line = data.nextLine();
 					if(line.contains("<iframe")) {
 						changed=true;
+						// Extract the src attribute value with simple string indexing.
+						// This works because CreateTemplates always writes the iframe on
+						// a single line with src= as the first attribute.
 						int start = line.indexOf("src=\"")+5;
 						int end = line.indexOf("\"",start);
 						String location = path+line.substring(start, end);
 						File rel=new File(location);
 						Scanner relFile = new Scanner(rel);
-						while(relFile.hasNextLine()) 
-							lines.add(relFile.nextLine());	
+						while(relFile.hasNextLine())
+							lines.add(relFile.nextLine());
 						relFile.close();
 						if(!line.contains("</iframe>")) System.err.println("Not inline");
 					} else {

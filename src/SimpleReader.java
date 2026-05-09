@@ -76,23 +76,30 @@ public class SimpleReader extends RelationshipReader {
 	protected void createRelationship(String id1, String id2, String relationship) {
 		Map<String,List<String>> relationships;
 		List<String> ids;
+		// Capitalize so labels display consistently regardless of CSV casing.
 		relationship = relationship.toUpperCase().charAt(0)+relationship.substring(1);
 
+		// Expand abbreviated labels that OpenCSV may split on whitespace.
 		if(relationship.equals("Trained"))
 			relationship+=" by";
 
 		if(relationship.equals("Maybe"))
 			relationship+=" taught by";
 
+		// "Family" is ambiguous — disambiguate by direction before storing.
 		if(relationship.equals("Family"))
 			relationship="Earlier generation";
 
+		// Store id1 under id2's entry using the as-written label (senior's perspective).
+		// e.g. for row "Ueshiba, Tohei, Sensei": Tohei's page lists Ueshiba as "Sensei".
 		relationships = relationshipMap.getOrDefault(id2, new HashMap<>());
 		ids = relationships.getOrDefault(relationship,new ArrayList<>());
 		ids.add(id1);
 		relationships.put(relationship, ids);
 		relationshipMap.put(id2, relationships);
 
+		// Flip the label before storing the reverse direction (junior's perspective).
+		// e.g. Ueshiba's page lists Tohei as "Deshi".
 		if(relationship.equals("Sensei"))
 			relationship="Deshi";
 
@@ -197,14 +204,20 @@ public class SimpleReader extends RelationshipReader {
 		boolean rightArrow;
 		for(String relationship : relationships.keySet()) {
 			out.printf("%n      %%%% %s relationships%n", relationship);
+			// Arrow points toward the subject when the relationship is "incoming"
+			// (the subject is the junior/recipient). For outgoing relationships the
+			// subject points outward to the relationship node.
 			if(relationship.equalsIgnoreCase("sensei") ||
 					relationship.equalsIgnoreCase("Maybe taught by") ||
 					relationship.equalsIgnoreCase("Trained by") ||
 					relationship.equalsIgnoreCase("Earlier generation"))
 				rightArrow=false;
-			else 
+			else
 				rightArrow=true;
+			// Mermaid node IDs cannot contain spaces; replace with underscores.
 			String relationshipId=relationship.replace(" ", "_");
+			// Only emit a labelled node declaration when the ID was changed; single-word
+			// relationship types are used as their own label implicitly.
 			if(!relationshipId.equals(relationship))
 				out.printf("      %s[%s]%n",relationshipId,relationship);
 			if(rightArrow)
@@ -217,7 +230,7 @@ public class SimpleReader extends RelationshipReader {
 				if(rightArrow)
 					out.printf("      %s --> %s%n",relationshipId,person);
 				else
-					out.printf("      %s --> %s%n",person,relationshipId);				
+					out.printf("      %s --> %s%n",person,relationshipId);
 				out.printf("      %s([%s])%n",person,name);
 
 				if(gn.hasUrl()) 

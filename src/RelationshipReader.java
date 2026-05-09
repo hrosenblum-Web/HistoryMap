@@ -45,9 +45,11 @@ public abstract class RelationshipReader implements HistoryFileProcessor {
 			if (row.length < 3)
 				continue;
 			node1 = createNode(row[SENIOR_PERSON]);
+			// putIfAbsent so that a person who appears in multiple rows keeps the
+			// node created from their first occurrence rather than being overwritten.
 			nodes.putIfAbsent(node1.getId(), node1);
 
-			if (row[JUNIOR_PERSON].isBlank()) // if there is only one person
+			if (row[JUNIOR_PERSON].isBlank()) // standalone entry with no relationship
 				continue;
 
 			node2 = createNode(row[JUNIOR_PERSON]);

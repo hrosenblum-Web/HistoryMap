@@ -41,19 +41,22 @@ public class MermaidNode extends GraphNode {
 		sb.append(name);
 		sb.append("\"]");
 		if(hasUrl()) {
+			// Mermaid click directive opens the URL in a new tab.
 			sb.append("\n\tclick ");
 			sb.append(id);
 			sb.append(" \"");
 			sb.append(url);
 			sb.append("\" _blank");
+			// Blue border visually distinguishes nodes that have a biography page.
 			sb.append("\n\tstyle ");
 			sb.append(id);
 			sb.append(" stroke:blue,stroke-width:4px");
 		}
-		
+
 //		String shortName =  id.replace('_', ' ');
 		File file = new File(PATH+"Images\\"+id+".jpg");
 		if(file.exists()) {
+			// @{ } is Mermaid's node metadata syntax for attaching an image below the label.
 			sb.append("\n\t");
 			sb.append(id);
 			sb.append("@{ img: \"Images/");

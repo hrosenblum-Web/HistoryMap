@@ -60,7 +60,10 @@ public class HistoryClean {
 				}
 				historyEntries.add(line.toString());
 
-				// check for transposition of first and last name
+				// Detect likely first/last name transpositions: if both "John Smith" and
+				// "Smith John" appear in the data, one is almost certainly a typo.
+				// add() returns false when the name was already in the set, meaning
+				// we've seen this exact string before and don't need to check again.
 				if(transposition.add(column0)) {
 					int space=column0.indexOf(' ');
 					if(space==-1)
@@ -69,6 +72,7 @@ public class HistoryClean {
 					if(transposition.contains(swapped))
 						System.err.println("Possible transposition "+column0+" and "+swapped);
 				}
+				// Run the same transposition check on the junior person (column 1).
 				column0 = row[1].trim();
 				if(transposition.add(column0)) {
 					int space=column0.indexOf(' ');
