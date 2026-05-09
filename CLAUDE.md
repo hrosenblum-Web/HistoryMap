@@ -82,4 +82,10 @@ To use in a different environment, update the path string in each main class. Ex
 
 ## Testing
 
-No formal test suite. `SanityTest.main()` recursively validates that all filenames in the working directory contain only word characters (`[A-Za-z0-9_.]`). Run individual stages directly by invoking `ClassName.main(new String[]{})` after updating the hardcoded path.
+JUnit 5 tests live in `test/`. Run them from the CLI with `TestRunner` (requires Eclipse JARs at `C:\eclipse\plugins\`):
+
+```
+java -cp "bin;C:/OpenCsv/opencsv-5.9.jar;C:/OpenCsv/commons-lang3-3.17.0/commons-lang3-3.17.0.jar;C:/eclipse/plugins/junit-jupiter-api_5.14.2.jar;C:/eclipse/plugins/junit-jupiter-engine_5.14.2.jar;C:/eclipse/plugins/junit-platform-launcher_1.14.2.jar;C:/eclipse/plugins/junit-platform-engine_1.14.2.jar;C:/eclipse/plugins/junit-platform-commons_1.14.2.jar;C:/eclipse/plugins/org.opentest4j_1.3.0.jar" TestRunner
+```
+
+`SanityTest.main()` recursively validates that all filenames in the working directory contain only word characters (`[A-Za-z0-9_.]`).
