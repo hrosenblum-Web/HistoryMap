@@ -41,14 +41,14 @@ public class HistoryClean {
 
 		try (CSVReader fileReader = new CSVReaderBuilder(new FileReader(fileName)).build()) {
 			header = String.join(",", fileReader.readNext());
-			StringBuffer line;
+			StringBuilder line;
 			String column0;
 
 			for (String[] row : fileReader.readAll()) {
 				column0 = row[0].trim();
 				if (column0.isEmpty())
 					continue;
-				line = new StringBuffer(4);
+				line = new StringBuilder(4);
 				if (column0.contains("\n")) {
 					line.append("\"");
 					line.append(column0);
@@ -108,7 +108,7 @@ public class HistoryClean {
 		if (!seen.add(name)) return; // already checked this name
 		int space = name.indexOf(' ');
 		if (space == -1) return;
-		String swapped = name.substring(space).trim() + " " + name.substring(0, space).trim();
+		String swapped = name.substring(space + 1) + " " + name.substring(0, space);
 		if (seen.contains(swapped))
 			System.err.println("Possible transposition " + name + " and " + swapped);
 	}

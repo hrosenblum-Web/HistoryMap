@@ -9,18 +9,18 @@ import java.io.File;
  * entry errors early.
  */
 public class SanityTest {
-	private static final String startDir = "C:\\Users\\user\\Desktop\\Demo\\Website\\";
 	private static final String NON_WORD_PATTERN = "[^\\w.]";
 	private static final String SEARCH_PATTERN = ".*" + NON_WORD_PATTERN + ".*";
 	private static boolean errorFound = false;
 
 	/**
-	 * Recursively checks all filenames under {@code startDir} and prints any
+	 * Recursively checks all filenames under the given path and prints any
 	 * offending paths to stderr. Prints "All good" if no problems are found.
 	 *
-	 * @param args unused
+	 * @param args optional: args[0] is the directory to check (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
+		String startDir = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\Website\\";
 		recursiveCheck(new File(startDir));
 		if (!errorFound)
 			System.out.println("All good");

@@ -36,7 +36,7 @@ public class MermaidNode extends GraphNode {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		sb.append("\t");
 		sb.append(id);
@@ -55,7 +55,6 @@ public class MermaidNode extends GraphNode {
 		sb.append(id);
 		sb.append(" stroke:blue,stroke-width:4px");
 
-//		String shortName =  id.replace('_', ' ');
 		if (hasImage()) {
 			// @{ } is Mermaid's node metadata syntax for attaching an image below the label.
 			sb.append("\n\t");

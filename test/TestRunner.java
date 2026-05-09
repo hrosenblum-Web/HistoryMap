@@ -14,10 +14,11 @@ public class TestRunner {
     public static void main(String[] args) {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
             .selectors(
-                DiscoverySelectors.selectClass("GraphNodeTest"),
-                DiscoverySelectors.selectClass("HistoryCleanTest"),
-                DiscoverySelectors.selectClass("MermaidReaderTest"),
-                DiscoverySelectors.selectClass("SimpleReaderTest")
+                DiscoverySelectors.selectClass(GraphNodeTest.class),
+                DiscoverySelectors.selectClass(HistoryCleanTest.class),
+                DiscoverySelectors.selectClass(MermaidReaderTest.class),
+                DiscoverySelectors.selectClass(PipelineStageTest.class),
+                DiscoverySelectors.selectClass(SimpleReaderTest.class)
             )
             .build();
 

@@ -54,6 +54,8 @@ public class CreateTemplates implements HistoryFileProcessor {
 		}
 
 		File relationshipFiles = new File(relationshipPath);
+		if (!relationshipFiles.exists() && !relationshipFiles.mkdirs())
+			throw new RuntimeException("Cannot create directory: " + relationshipPath);
 		boolean change = false;
 
 		// Create missing root biography pages for everyone in the Relationships/ dir.
@@ -93,8 +95,7 @@ public class CreateTemplates implements HistoryFileProcessor {
 
 		if (!change)
 			System.out.println("No changes");
-		else
-			change = false;
+		change = false;
 
 		// Create missing Relationships/ stubs for anyone who has a root page but no
 		// relationship file.
