@@ -122,7 +122,7 @@ public class HistoryClean {
 	 */
 	static String clean(String value) {
 		if (value.charAt(0) == '\"')
-			return value.substring(1, value.length());
+			return value.substring(1);
 		else
 			return value;
 	}

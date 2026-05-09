@@ -20,6 +20,7 @@ public class SanityTest {
 	 * @param args optional: args[0] is the directory to check (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
+		errorFound = false;
 		String startDir = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\Website\\";
 		recursiveCheck(new File(startDir));
 		if (!errorFound)

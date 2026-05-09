@@ -11,7 +11,7 @@ import com.opencsv.exceptions.CsvException;
  * mini-graph and a linked list of that person's connections.
  */
 public class HistoryRelationships {
-	private static boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
 	/**
 	 * Entry point for the relationship page generation stage. When {@code DEBUG}

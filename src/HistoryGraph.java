@@ -12,7 +12,7 @@ import com.opencsv.exceptions.CsvException;
  * martial arts lineage.
  */
 public class HistoryGraph {
-	private static boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
 	/**
 	 * Entry point for the graph generation stage. Writes {@code index.html} to

@@ -68,7 +68,7 @@ public class CreateTemplates implements HistoryFileProcessor {
 		for (String relationshipFileName : dirStrings) {
 			if (!relationshipFileName.endsWith(".html"))
 				continue;
-			String id = relationshipFileName.substring(0, relationshipFileName.length() - 5);
+			String id = stripHtmlExtension(relationshipFileName);
 			String name = nameLookup.get(id);
 			if (name == null) {
 				System.err.println("Skipping " + relationshipFileName + ": no matching entry in History.csv");
@@ -108,7 +108,7 @@ public class CreateTemplates implements HistoryFileProcessor {
 		for (String rootFileName : dirRootStrings) {
 			if (!rootFileName.endsWith(".html"))
 				continue;
-			String name = rootFileName.substring(0, rootFileName.length() - 5);
+			String name = stripHtmlExtension(rootFileName);
 			File pageFile = new File(relationshipPath + rootFileName);
 			if (!pageFile.exists()) {
 				change = true;
@@ -130,6 +130,11 @@ public class CreateTemplates implements HistoryFileProcessor {
 		}
 		if (!change)
 			System.out.println("No changes");
+	}
+
+	/** Strips the {@code .html} extension from a filename to obtain the person ID. */
+	private static String stripHtmlExtension(String fileName) {
+		return fileName.substring(0, fileName.length() - 5);
 	}
 
 	/**
