@@ -79,6 +79,10 @@ public class CreateTemplates implements HistoryFileProcessor {
 				continue;
 			String id = relationshipFileName.substring(0, relationshipFileName.length() - 5);
 			String name = nameLookup.get(id);
+			if (name == null) {
+				System.err.println("Skipping " + relationshipFileName + ": no matching entry in History.csv");
+				continue;
+			}
 			File pageFile = new File(rootPath + relationshipFileName);
 			if (writeMainStubPage(pageFile, name, id, external, timelinePath)) {
 				change = true;

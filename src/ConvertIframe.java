@@ -67,11 +67,11 @@ public class ConvertIframe {
 				if (!changed)
 					continue;
 				convertCounter++;
-				PrintStream ps = new PrintStream(mainFile);
-				for (String line : lines) {
-					ps.println(line);
+				try (PrintStream ps = new PrintStream(mainFile)) {
+					for (String line : lines) {
+						ps.println(line);
+					}
 				}
-				ps.close();
 				if (DEBUG) System.out.println(name + " updated");
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException("File not found during iframe conversion: " + e.getMessage(), e);

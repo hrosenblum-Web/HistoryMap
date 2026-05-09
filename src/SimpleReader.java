@@ -66,6 +66,8 @@ public class SimpleReader extends RelationshipReader {
 	 */
 	@Override
 	protected void createRelationship(String id1, String id2, String relationship) {
+		if (relationship.isEmpty())
+			return;
 		Map<String, List<String>> relationships;
 		List<String> ids;
 		// Capitalize so labels display consistently regardless of CSV casing.
@@ -225,8 +227,6 @@ public class SimpleReader extends RelationshipReader {
 
 				if (gn.hasUrl())
 					out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
-				else
-					out.print(name);
 
 				if (gn.hasImage()) {
 					out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
