@@ -44,7 +44,7 @@ public class MermaidReader extends RelationshipReader {
 	 */
 	@Override
 	protected void createRelationship(String id1, String id2, String relationship) {
-		switch (relationship) {
+		switch (relationship.toLowerCase()) {
 		case "family":
 			relationships.add(id1 + " ==> " + id2);
 			break;

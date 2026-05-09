@@ -51,6 +51,15 @@ public class MermaidReaderTest {
 	}
 
 	@Test
+	void relationshipTypeMatchingIsCaseInsensitive(@TempDir Path tempDir) throws Exception {
+		// CSV may contain "Sensei" (capitalised) rather than the lowercase canonical form.
+		// MermaidReader must still produce a solid arrow, not a dashed generic one.
+		List<String> rels = readerFor(tempDir, "Ueshiba,Tohei,Sensei,").getRelationships();
+		assertEquals(1, rels.size());
+		assertTrue(rels.get(0).contains("-->"), "Sensei (capital S) should still use solid arrow");
+	}
+
+	@Test
 	void emptyRelationshipProducesNoEdge(@TempDir Path tempDir) throws Exception {
 		assertTrue(readerFor(tempDir, "Ueshiba,Tohei,,").getRelationships().isEmpty(),
 				"blank relationship should add no edge");

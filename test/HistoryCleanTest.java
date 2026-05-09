@@ -68,6 +68,22 @@ public class HistoryCleanTest {
 				"No transposition warning should be emitted for distinct names");
 	}
 
+	@Test
+	void headerOnlyCsvProducesNoOutput(@TempDir Path tempDir) throws Exception {
+		Path csv = tempDir.resolve("History.csv");
+		try (PrintWriter pw = new PrintWriter(csv.toFile())) {
+			pw.println("SeniorPerson,JuniorPerson,Relationship,SeniorUrl");
+		}
+
+		assertDoesNotThrow(() -> HistoryClean.main(new String[]{tempDir.toString() + "\\"}),
+				"header-only CSV should not throw");
+
+		// File should still be written back with just the header
+		String content = java.nio.file.Files.readString(csv);
+		assertTrue(content.trim().equalsIgnoreCase("SeniorPerson,JuniorPerson,Relationship,SeniorUrl"),
+				"output should contain only the header row");
+	}
+
 	private static String captureStderr(Runnable action) {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		PrintStream original = System.err;
