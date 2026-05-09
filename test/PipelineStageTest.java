@@ -62,4 +62,13 @@ public class PipelineStageTest {
 		assertTrue(result.contains("Tohei relationships chart"), "iframe content should be inlined");
 		assertFalse(result.contains("<iframe"), "iframe tag should be replaced");
 	}
+
+	@Test
+	void historyGraphThrowsWhenCsvMissing(@TempDir Path tempDir) {
+		// No History.csv created — HistoryGraph should throw RuntimeException,
+		// which is what BuildAll catches to abort the pipeline with exit code 1.
+		assertThrows(RuntimeException.class,
+				() -> HistoryGraph.main(new String[]{tempDir.toString() + "\\"}),
+				"missing History.csv should throw RuntimeException");
+	}
 }

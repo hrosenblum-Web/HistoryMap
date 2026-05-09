@@ -165,8 +165,4 @@ public class GraphNode {
 		return hasImage;
 	}
 
-//	public boolean hasMoreData(int i) {
-//		return (name.length()>id.length() || hasUrl());
-//	}
-
 }
