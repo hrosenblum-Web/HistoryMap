@@ -29,13 +29,30 @@ public class GraphNode {
 		PATH = path;
 	}
 
-	/** Characters replaced during name-to-ID conversion. */
-	private final Map<Character, Character> remap = Map.of(
-			' ', '_',
-			'\'', '_',
-			'ō', 'o',
-			'ū', 'u',
-			'é', 'e'
+	/**
+	 * Characters replaced during name-to-ID conversion.
+	 * Covers common diacritics found in Japanese, Korean, and European martial arts names.
+	 */
+	private final Map<Character, Character> remap = Map.ofEntries(
+			Map.entry(' ',  '_'),
+			Map.entry('\'', '_'),
+			Map.entry('ō',  'o'),
+			Map.entry('ū',  'u'),
+			Map.entry('ā',  'a'),
+			Map.entry('ī',  'i'),
+			Map.entry('é',  'e'),
+			Map.entry('è',  'e'),
+			Map.entry('ê',  'e'),
+			Map.entry('á',  'a'),
+			Map.entry('à',  'a'),
+			Map.entry('â',  'a'),
+			Map.entry('ä',  'a'),
+			Map.entry('í',  'i'),
+			Map.entry('ó',  'o'),
+			Map.entry('ö',  'o'),
+			Map.entry('ú',  'u'),
+			Map.entry('ü',  'u'),
+			Map.entry('ñ',  'n')
 	);
 
 	/**
@@ -67,7 +84,7 @@ public class GraphNode {
 	}
 
 	/**
-	 * Constructs a node whose URL defaults to {@code <id>.html}.
+	 * Constructs a node whose URL defaults to {@code <id>.html} (the local biography page).
 	 *
 	 * @param name display name as it appears in the CSV
 	 */
@@ -88,7 +105,7 @@ public class GraphNode {
 	public GraphNode(String name, String url) {
 		this.name = name;
 		this.id = convertToId(name);
-		this.url = url;
+		this.url = url.isEmpty() ? id + ".html" : url;
 		File file = new File(PATH + "Images\\" + id + ".jpg");
 		hasImage = file.exists();
 	}
@@ -104,6 +121,7 @@ public class GraphNode {
 
 	/**
 	 * Returns the URL for this person's profile page.
+	 * Always non-empty: defaults to {@code <id>.html} if no external URL was provided.
 	 *
 	 * @return profile URL or external link
 	 */
@@ -130,12 +148,13 @@ public class GraphNode {
 	}
 
 	/**
-	 * Returns {@code true} if this node has a non-empty URL.
+	 * Returns {@code true} if this node has an external URL (i.e. not just the
+	 * default local biography page {@code <id>.html}).
 	 *
-	 * @return whether a URL is set
+	 * @return whether an external URL was explicitly provided
 	 */
-	public boolean hasUrl() {
-		return !url.equals("");
+	public boolean hasExternalUrl() {
+		return !url.equals(id + ".html");
 	}
 
 	/**

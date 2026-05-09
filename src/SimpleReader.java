@@ -45,13 +45,16 @@ public class SimpleReader extends RelationshipReader {
 	}
 
 	/**
-	 * Creates a plain {@link GraphNode} (not a Mermaid node) for the given name.
+	 * Creates a plain {@link GraphNode} for the given person.
+	 * The external URL is intentionally ignored so relationship pages always
+	 * link to local biography pages for consistent site navigation.
 	 *
 	 * @param name display name from the CSV
-	 * @return new {@code GraphNode} instance
+	 * @param url  external URL (ignored)
+	 * @return new {@code GraphNode} with a local biography page URL
 	 */
 	@Override
-	protected GraphNode createNode(String name) {
+	protected GraphNode createNode(String name, String url) {
 		return new GraphNode(name);
 	}
 
@@ -140,10 +143,8 @@ public class SimpleReader extends RelationshipReader {
 	public void save() {
 		Set<String> personIds = relationshipMap.keySet();
 		for (String personId : personIds) {
-			try {
-				PrintStream out = new PrintStream(new File(path + personId + ".html"));
+			try (PrintStream out = new PrintStream(new File(path + personId + ".html"))) {
 				printChartData(personId, out);
-				out.close();
 				System.out.println(path + personId + ".html created");
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException("Failed to write relationship page for " + personId, e);
@@ -166,10 +167,7 @@ public class SimpleReader extends RelationshipReader {
 				GraphNode gn = nodes.get(person);
 				String name = gn.getName().replaceAll("\n", " ");
 				out.print("\t\t<li>");
-				if (gn.hasUrl()) {
-					out.print("<a href=\"" + gn.getUrl() + "\" target=\"_parent\">" + name + "</a>");
-				} else
-					out.print(name);
+				out.print("<a href=\"" + gn.getUrl() + "\" target=\"_parent\">" + name + "</a>");
 				out.println("</li>");
 			}
 			out.println("\t</ul>");
@@ -225,12 +223,10 @@ public class SimpleReader extends RelationshipReader {
 					out.printf("      %s --> %s%n", person, relationshipId);
 				out.printf("      %s([%s])%n", person, name);
 
-				if (gn.hasUrl())
-					out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
-
 				if (gn.hasImage()) {
 					out.printf("%s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
 				}
+				out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
 			}
 		}
 		out.println(""
@@ -238,7 +234,7 @@ public class SimpleReader extends RelationshipReader {
 				+ "   <hr/>\n"
 				+ "</div>\n"
 				+ "<script type=\"module\">\n"
-				+ "   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';\n"
+				+ "   import mermaid from '" + HistoryFileProcessor.MERMAID_CDN + "';\n"
 				+ "   mermaid.initialize({ startOnLoad: true });\n"
 				+ "</script>");
 	}

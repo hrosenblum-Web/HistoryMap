@@ -12,4 +12,8 @@ public interface HistoryFileProcessor {
 	public static final int RELATIONSHIP  = 2;
 	/** Column 3: external URL for the senior person's profile page; may be blank. */
 	public static final int SENIOR_URL    = 3;
+
+	/** CDN URL for the Mermaid.js ESM module used in all generated HTML pages. */
+	public static final String MERMAID_CDN =
+			"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 }

@@ -21,6 +21,20 @@ public class MermaidReader extends RelationshipReader {
 	}
 
 	/**
+	 * Creates a {@link MermaidNode} for the given person.
+	 * The external URL is intentionally ignored so the diagram always links
+	 * to the local biography page for consistent site navigation.
+	 *
+	 * @param name display name from the CSV
+	 * @param url  external URL (ignored)
+	 * @return new {@code MermaidNode} with a local biography page URL
+	 */
+	@Override
+	protected GraphNode createNode(String name, String url) {
+		return new MermaidNode(name);
+	}
+
+	/**
 	 * Appends a Mermaid edge string to {@link RelationshipReader#relationships}
 	 * using an arrow style determined by the relationship type.
 	 *
@@ -46,17 +60,6 @@ public class MermaidReader extends RelationshipReader {
 			relationships.add(id1 + " -." + relationship + ".-> " + id2);
 			break;
 		}
-	}
-
-	/**
-	 * Creates a {@link MermaidNode} for the given person name.
-	 *
-	 * @param name display name from the CSV
-	 * @return new {@code MermaidNode} instance
-	 */
-	@Override
-	protected GraphNode createNode(String name) {
-		return new MermaidNode(name);
 	}
 
 }

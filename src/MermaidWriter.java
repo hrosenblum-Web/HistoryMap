@@ -68,11 +68,11 @@ public class MermaidWriter implements GraphWriter {
 		out.println("      </pre>");
 		out.println("    </div>");
 		out.println("    <script type=\"module\">");
-		out.println("      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';");
+		out.println("      import mermaid from '" + HistoryFileProcessor.MERMAID_CDN + "';");
 		out.println("      mermaid.initialize({ startOnLoad: true });");
 		out.println("    </script>");
 		out.println("  </body>");
-		out.println("</html>		");
+		out.println("</html>");
 	}
 
 }

@@ -37,32 +37,32 @@ public class ConvertIframe {
 			if (!name.endsWith(".html")) continue;
 
 			try {
-				Scanner data = new Scanner(mainFile);
 				List<String> lines = new ArrayList<>();
 				boolean changed = false;
-				while (data.hasNextLine()) {
-					String line = data.nextLine();
-					if (line.contains("<iframe")) {
-						changed = true;
-						// Extract the src attribute value with simple string indexing.
-						// This works because CreateTemplates always writes the iframe on
-						// a single line with src= as the first attribute.
-						if (!line.contains("</iframe>"))
-							throw new RuntimeException("Multi-line <iframe> not supported in " + name
-									+ " — CreateTemplates must keep the tag on one line");
-						int start = line.indexOf("src=\"") + 5;
-						int end = line.indexOf("\"", start);
-						String location = path + line.substring(start, end);
-						File rel = new File(location);
-						Scanner relFile = new Scanner(rel);
-						while (relFile.hasNextLine())
-							lines.add(relFile.nextLine());
-						relFile.close();
-					} else {
-						lines.add(line);
+
+				try (Scanner data = new Scanner(mainFile)) {
+					while (data.hasNextLine()) {
+						String line = data.nextLine();
+						if (line.contains("<iframe")) {
+							changed = true;
+							// Extract the src attribute value with simple string indexing.
+							// This works because CreateTemplates always writes the iframe on
+							// a single line with src= as the first attribute.
+							if (!line.contains("</iframe>"))
+								throw new RuntimeException("Multi-line <iframe> not supported in " + name
+										+ " — CreateTemplates must keep the tag on one line");
+							int start = line.indexOf("src=\"") + 5;
+							int end = line.indexOf("\"", start);
+							String location = path + line.substring(start, end);
+							try (Scanner relFile = new Scanner(new File(location))) {
+								while (relFile.hasNextLine())
+									lines.add(relFile.nextLine());
+							}
+						} else {
+							lines.add(line);
+						}
 					}
 				}
-				data.close();
 
 				if (!changed)
 					continue;

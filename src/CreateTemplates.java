@@ -1,13 +1,10 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
 /**
@@ -39,32 +36,24 @@ public class CreateTemplates implements HistoryFileProcessor {
 
 		GraphNode.setPath(rootPath);
 
-		File relationshipFiles = new File(relationshipPath);
-
-		// Find all the external web pages and build a name→id lookup from the CSV.
-		Map<String, GraphNode> external = new HashMap<>();
-		Map<String, String> nameLookup = new HashMap<>();
-
+		// Use CsvNodeReader to collect all people and their external URLs in one pass,
+		// eliminating the need for a separate manual CSV read.
+		CsvNodeReader reader = new CsvNodeReader(rootPath + "History.csv");
 		try {
-			CSVReader fileReader = new CSVReaderBuilder(new FileReader(rootPath + "History.csv")).build();
-			fileReader.readNext(); // ignore header
-
-			for (String[] columns : fileReader.readAll()) {
-				GraphNode gn = new GraphNode(columns[SENIOR_PERSON]);
-				nameLookup.putIfAbsent(gn.getId(), gn.getName());
-				if (!columns[JUNIOR_PERSON].isEmpty()) {
-					gn = new GraphNode(columns[JUNIOR_PERSON]);
-					nameLookup.putIfAbsent(gn.getId(), gn.getName());
-				}
-				if (columns.length < 4 || columns[SENIOR_URL].isEmpty())
-					continue;
-				gn = new GraphNode(columns[SENIOR_PERSON], columns[SENIOR_URL]);
-				external.put(columns[SENIOR_PERSON], gn);
-			}
+			reader.load();
 		} catch (IOException | CsvException e) {
 			throw new RuntimeException("Failed to read History.csv", e);
 		}
 
+		Map<String, String> nameLookup = new HashMap<>();
+		Map<String, GraphNode> external = new HashMap<>();
+		for (GraphNode gn : reader.getNodes()) {
+			nameLookup.put(gn.getId(), gn.getName());
+			if (gn.hasExternalUrl())
+				external.put(gn.getName(), gn);
+		}
+
+		File relationshipFiles = new File(relationshipPath);
 		boolean change = false;
 
 		// Create missing root biography pages for everyone in the Relationships/ dir.
@@ -202,5 +191,26 @@ public class CreateTemplates implements HistoryFileProcessor {
 			throw new RuntimeException("Cannot create stub page " + pageFile, e);
 		}
 		return true;
+	}
+
+	/**
+	 * A minimal {@link RelationshipReader} subclass used solely to collect all
+	 * person nodes (with their external URLs) from the CSV. Relationships are
+	 * not needed for template generation and are discarded.
+	 */
+	private static class CsvNodeReader extends RelationshipReader {
+		CsvNodeReader(String fileName) {
+			super(fileName);
+		}
+
+		@Override
+		protected GraphNode createNode(String name, String url) {
+			return url.isEmpty() ? new GraphNode(name) : new GraphNode(name, url);
+		}
+
+		@Override
+		protected void createRelationship(String id1, String id2, String relationship) {
+			// no-op: CreateTemplates only needs the node list, not relationships
+		}
 	}
 }

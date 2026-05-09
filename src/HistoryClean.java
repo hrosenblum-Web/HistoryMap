@@ -75,6 +75,7 @@ public class HistoryClean {
 						System.err.println("Possible transposition " + column0 + " and " + swapped);
 				}
 				// Run the same transposition check on the junior person (column 1).
+				if (row.length < 2) continue;
 				column0 = row[1].trim();
 				if (transposition.add(column0)) {
 					int space = column0.indexOf(' ');
