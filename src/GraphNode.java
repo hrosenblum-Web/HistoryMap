@@ -36,23 +36,18 @@ public class GraphNode {
 	private final Map<Character, Character> remap = Map.ofEntries(
 			Map.entry(' ',  '_'),
 			Map.entry('\'', '_'),
-			Map.entry('ō',  'o'),
-			Map.entry('ū',  'u'),
-			Map.entry('ā',  'a'),
-			Map.entry('ī',  'i'),
-			Map.entry('é',  'e'),
-			Map.entry('è',  'e'),
-			Map.entry('ê',  'e'),
-			Map.entry('á',  'a'),
-			Map.entry('à',  'a'),
-			Map.entry('â',  'a'),
-			Map.entry('ä',  'a'),
-			Map.entry('í',  'i'),
-			Map.entry('ó',  'o'),
-			Map.entry('ö',  'o'),
-			Map.entry('ú',  'u'),
-			Map.entry('ü',  'u'),
-			Map.entry('ñ',  'n')
+			Map.entry('ō',  'o'), Map.entry('Ō',  'O'),
+			Map.entry('ū',  'u'), Map.entry('Ū',  'U'),
+			Map.entry('ā',  'a'), Map.entry('Ā',  'A'),
+			Map.entry('ī',  'i'), Map.entry('Ī',  'I'),
+			Map.entry('é',  'e'), Map.entry('è',  'e'), Map.entry('ê',  'e'),
+			Map.entry('É',  'E'), Map.entry('È',  'E'), Map.entry('Ê',  'E'),
+			Map.entry('á',  'a'), Map.entry('à',  'a'), Map.entry('â',  'a'), Map.entry('ä',  'a'),
+			Map.entry('Á',  'A'), Map.entry('À',  'A'), Map.entry('Â',  'A'), Map.entry('Ä',  'A'),
+			Map.entry('í',  'i'), Map.entry('Í',  'I'),
+			Map.entry('ó',  'o'), Map.entry('ö',  'o'), Map.entry('Ó',  'O'), Map.entry('Ö',  'O'),
+			Map.entry('ú',  'u'), Map.entry('ü',  'u'), Map.entry('Ú',  'U'), Map.entry('Ü',  'U'),
+			Map.entry('ñ',  'n'), Map.entry('Ñ',  'N')
 	);
 
 	/**
