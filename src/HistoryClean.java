@@ -121,6 +121,7 @@ public class HistoryClean {
 	 * @return value without the leading {@code "} character, if present
 	 */
 	static String clean(String value) {
+		if (value.isEmpty()) return value;
 		if (value.charAt(0) == '\"')
 			return value.substring(1);
 		else

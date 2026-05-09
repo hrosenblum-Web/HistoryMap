@@ -165,7 +165,7 @@ public class SimpleReader extends RelationshipReader {
 			out.println("\t<ul>");
 			for (String person : relationships.get(relationship)) {
 				GraphNode gn = nodes.get(person);
-				String name = gn.getName().replaceAll("\n", " ");
+				String name = gn.getName().replace("\n", " ");
 				out.print("\t\t<li>");
 				out.print("<a href=\"" + gn.getUrl() + "\" target=\"_parent\">" + name + "</a>");
 				out.println("</li>");

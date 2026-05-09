@@ -51,8 +51,13 @@ public class ConvertIframe {
 							if (!line.contains("</iframe>"))
 								throw new RuntimeException("Multi-line <iframe> not supported in " + name
 										+ " — CreateTemplates must keep the tag on one line");
-							int start = line.indexOf("src=\"") + 5;
+							int srcIdx = line.indexOf("src=\"");
+							if (srcIdx == -1)
+								throw new RuntimeException("<iframe> missing src attribute in " + name);
+							int start = srcIdx + 5;
 							int end = line.indexOf("\"", start);
+							if (end == -1)
+								throw new RuntimeException("<iframe> src attribute not closed in " + name);
 							String location = path + line.substring(start, end);
 							try (Scanner relFile = new Scanner(new File(location))) {
 								while (relFile.hasNextLine())

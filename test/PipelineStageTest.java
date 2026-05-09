@@ -44,4 +44,22 @@ public class PipelineStageTest {
 		assertTrue(ueshiba.contains("Deshi"), "Ueshiba's page should list Tohei as Deshi");
 		assertTrue(tohei.contains("mermaid"), "Relationship pages should include a Mermaid chart");
 	}
+
+	@Test
+	void convertIframeInlinesRelationshipContent(@TempDir Path tempDir) throws Exception {
+		Files.createDirectory(tempDir.resolve("Relationships"));
+		Files.writeString(tempDir.resolve("Relationships").resolve("Tohei.html"),
+				"<div>Tohei relationships chart</div>");
+
+		Files.writeString(tempDir.resolve("Tohei.html"),
+				"<html><body>\n"
+				+ "    <iframe src=\"Relationships/Tohei.html\" width=\"1000\" height=\"500\" title=\"TEST\">This is a test</iframe> \r\n"
+				+ "</body></html>\n");
+
+		ConvertIframe.main(new String[]{tempDir.toString() + "\\"});
+
+		String result = Files.readString(tempDir.resolve("Tohei.html"));
+		assertTrue(result.contains("Tohei relationships chart"), "iframe content should be inlined");
+		assertFalse(result.contains("<iframe"), "iframe tag should be replaced");
+	}
 }

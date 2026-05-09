@@ -45,10 +45,10 @@ public class SanityTest {
 				recursiveCheck(file);
 			} else {
 				String fileName = file.getName();
-				if(fileName.matches(SEARCH_PATTERN)) {
-					String[] sp = fileName.split(NON_WORD_PATTERN);
-					System.err.println(file.getAbsolutePath()+" is not in required format => "+String.join("?", sp));
-					errorFound=true;
+				if (fileName.matches(SEARCH_PATTERN)) {
+					String badChars = fileName.replaceAll("[\\w.]", "");
+					System.err.println(file.getAbsolutePath() + " contains invalid characters: [" + badChars + "]");
+					errorFound = true;
 				}
 			}
 		}	
