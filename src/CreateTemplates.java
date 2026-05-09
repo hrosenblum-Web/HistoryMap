@@ -100,9 +100,9 @@ public class CreateTemplates implements HistoryFileProcessor {
 		// Create missing Relationships/ stubs for anyone who has a root page but no
 		// relationship file.
 		System.out.println("\nCreate template relationship pages");
-		String[] dirRootStrings = relationshipFiles.list();
+		String[] dirRootStrings = new File(rootPath).list();
 		if (dirRootStrings == null) {
-			System.err.printf("CreateTemplates.main: %s directory is empty%n", relationshipFiles.getAbsolutePath());
+			System.err.printf("CreateTemplates.main: %s directory is empty%n", rootPath);
 			return;
 		}
 		for (String rootFileName : dirRootStrings) {
