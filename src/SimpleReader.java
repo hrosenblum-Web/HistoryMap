@@ -10,32 +10,68 @@ import java.util.Set;
 
 import com.opencsv.exceptions.CsvException;
 
+/**
+ * A {@link RelationshipReader} that generates per-person HTML relationship pages.
+ *
+ * <p>Relationships are stored bidirectionally in {@link #relationshipMap}: if
+ * person A is the sensei of person B, the map records "Sensei → [A]" for B and
+ * "Deshi → [B]" for A. Calling {@link #save()} writes one HTML file per person
+ * into the {@code Relationships/} directory.
+ */
 public class SimpleReader extends RelationshipReader {
-	private static Map<String,Map<String,List<String>>> relationshipMap = new HashMap<>();
-	private static String PATH ;
+	/** Nested map: personId → (relationshipLabel → list of related personIds). */
+	private static Map<String, Map<String, List<String>>> relationshipMap = new HashMap<>();
+	private static String PATH;
 
+	/**
+	 * Sets the base path, initializes {@link GraphNode#PATH}, and creates the
+	 * {@code Relationships/} subdirectory if it does not already exist.
+	 *
+	 * @param path absolute base path ending with a backslash
+	 */
 	public static void setPath(String path) {
-		PATH=path+"Relationships\\";
+		PATH = path + "Relationships\\";
 		GraphNode.setPath(path);
-		File file = new File(path+"Relationships");
-		if(!file.exists()) {
-			if(file.mkdirs())
-				System.err.println("CREATE "+file.getAbsolutePath());
+		File file = new File(path + "Relationships");
+		if (!file.exists()) {
+			if (file.mkdirs())
+				System.err.println("CREATE " + file.getAbsolutePath());
 			else
-				System.err.println("Unable to create "+file.getAbsolutePath());
-
+				System.err.println("Unable to create " + file.getAbsolutePath());
 		}
 	}
 
+	/**
+	 * Parses the given CSV file and populates the bidirectional relationship map.
+	 *
+	 * @param fileName absolute path to {@code History.csv}
+	 * @throws IOException  if the file cannot be read
+	 * @throws CsvException if the CSV is malformed
+	 */
 	public SimpleReader(String fileName) throws IOException, CsvException {
 		super(fileName);
 	}
 
+	/**
+	 * Creates a plain {@link GraphNode} (not a Mermaid node) for the given name.
+	 *
+	 * @param name display name from the CSV
+	 * @return new {@code GraphNode} instance
+	 */
 	@Override
 	protected GraphNode createNode(String name) {
 		return new GraphNode(name);
 	}
 
+	/**
+	 * Records the relationship in both directions in {@link #relationshipMap}.
+	 * The senior-to-junior direction is stored as-is (e.g. "Sensei"); the
+	 * junior-to-senior direction uses the mirrored label (e.g. "Deshi").
+	 *
+	 * @param id1          sanitized ID of the senior person
+	 * @param id2          sanitized ID of the junior person
+	 * @param relationship raw relationship label from the CSV
+	 */
 	@Override
 	protected void createRelationship(String id1, String id2, String relationship) {
 		Map<String,List<String>> relationships;
@@ -76,6 +112,10 @@ public class SimpleReader extends RelationshipReader {
 		relationshipMap.put(id1, relationships);
 	}
 
+	/**
+	 * Prints a full HTML summary of all relationships to {@code System.out}.
+	 * Intended for debug use; {@link #save()} is the production equivalent.
+	 */
 	public void print() {
 		Set<String> personIds=relationshipMap.keySet();
 		System.out.println("<!DOCTYPE html>\n"
@@ -92,6 +132,10 @@ public class SimpleReader extends RelationshipReader {
 				+ "</html>");
 	}
 
+	/**
+	 * Writes one HTML relationship page per person into the {@code Relationships/}
+	 * directory. Each file is named {@code <id>.html}.
+	 */
 	public void save() {
 		Set<String> personIds=relationshipMap.keySet();
 		for(String personId:personIds) {

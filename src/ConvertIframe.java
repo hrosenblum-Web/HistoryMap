@@ -5,9 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Pipeline stage 5: inlines {@code <iframe>} content into root HTML pages.
+ *
+ * <p>Scans every {@code .html} file in the configured directory. For any file
+ * that contains an {@code <iframe src="...">} tag, the tag is replaced with the
+ * full content of the referenced file. This makes each biography page
+ * self-contained so the relationship chart renders without a separate iframe
+ * request.
+ */
 public class ConvertIframe {
-	private static final boolean DEBUG=false;
+	private static final boolean DEBUG = false;
 
+	/**
+	 * Entry point for the iframe-inlining stage. Processes all {@code .html}
+	 * files in the configured directory and reports how many were modified.
+	 *
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		String path ="C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		File dir = new File(path);

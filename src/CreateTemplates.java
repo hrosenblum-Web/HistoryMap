@@ -10,8 +10,28 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
-public class CreateTemplates implements HistoryFileProcessor{
+/**
+ * Pipeline stage 4: creates stub HTML pages for people who do not yet have one.
+ *
+ * <p>Iterates over the {@code Relationships/} directory to find all known
+ * person IDs, then creates two kinds of missing pages:
+ * <ul>
+ *   <li>A root-level biography stub ({@code <id>.html}) with a portrait placeholder,
+ *       optional timeline link, optional external/Wikipedia link, and an embedded
+ *       iframe pointing to the person's relationship page.</li>
+ *   <li>A {@code Relationships/<id>.html} stub with a "No known relationships"
+ *       message, for people who appear in root pages but lack a relationship file.</li>
+ * </ul>
+ * Existing files are never overwritten.
+ */
+public class CreateTemplates implements HistoryFileProcessor {
 
+	/**
+	 * Entry point for the template creation stage. Reads {@code History.csv} to
+	 * build name and external-URL lookup tables, then creates any missing stub pages.
+	 *
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		String rootPath = "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		String relationshipPath = rootPath+"Relationships\\";

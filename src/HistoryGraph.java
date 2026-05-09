@@ -5,9 +5,24 @@ import java.util.List;
 
 import com.opencsv.exceptions.CsvException;
 
+/**
+ * Pipeline stage 2: generates the main Mermaid.js relationship graph.
+ *
+ * <p>Reads the cleaned {@code History.csv}, builds node and edge definitions
+ * using {@link MermaidReader}, and writes a self-contained {@code index.html}
+ * via {@link MermaidWriter}. The result is a top-down flowchart of the full
+ * martial arts lineage.
+ */
 public class HistoryGraph {
-	private static boolean DEBUG=false;
+	private static boolean DEBUG = false;
 
+	/**
+	 * Entry point for the graph generation stage. Writes {@code index.html} to
+	 * the configured path. When {@code DEBUG} is {@code true}, output goes to
+	 * stdout instead of the file.
+	 *
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		String path ="C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 		try {
