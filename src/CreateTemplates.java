@@ -30,7 +30,7 @@ public class CreateTemplates implements HistoryFileProcessor {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String rootPath = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+		String rootPath = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
 		String relationshipPath = rootPath + "Relationships\\";
 		String timelinePath = rootPath + "timeline\\";
 

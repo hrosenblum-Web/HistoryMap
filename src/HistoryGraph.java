@@ -1,8 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
-
 import com.opencsv.exceptions.CsvException;
 
 /**
@@ -24,30 +22,24 @@ public class HistoryGraph {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
 		try {
 			GraphNode.setPath(path);
 			RelationshipReader rr = new MermaidReader(path + "History.csv");
 			rr.load();
 
-			PrintStream out;
-			if (DEBUG)
-				out = System.out;
-			else {
-				File file = new File(path + "index.html");
-				out = new PrintStream(file);
-			}
-			GraphWriter gw = new MermaidWriter(out);
-
-			List<GraphNode> names = rr.getNodes();
-			gw.writeNames(names);
-
-			List<String> relationships = rr.getRelationships();
-			gw.writeRelationships(relationships);
-
-			gw.close();
-			if (!DEBUG) {
-				out.close();
+			if (DEBUG) {
+				GraphWriter gw = new MermaidWriter(System.out);
+				gw.writeNames(rr.getNodes());
+				gw.writeRelationships(rr.getRelationships());
+				gw.close();
+			} else {
+				try (PrintStream out = new PrintStream(new File(path + "index.html"))) {
+					GraphWriter gw = new MermaidWriter(out);
+					gw.writeNames(rr.getNodes());
+					gw.writeRelationships(rr.getRelationships());
+					gw.close();
+				}
 				System.out.println("file " + path + "index.html created");
 			}
 		} catch (IOException | CsvException e) {

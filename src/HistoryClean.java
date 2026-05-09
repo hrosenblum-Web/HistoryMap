@@ -32,7 +32,7 @@ public class HistoryClean {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
 		String fileName = path + "History.csv";
 
 		Set<String> transposition = new HashSet<>();
@@ -66,25 +66,11 @@ public class HistoryClean {
 				// "Smith John" appear in the data, one is almost certainly a typo.
 				// add() returns false when the name was already in the set, meaning
 				// we've seen this exact string before and don't need to check again.
-				if (transposition.add(column0)) {
-					int space = column0.indexOf(' ');
-					if (space == -1)
-						continue;
-					String swapped = column0.substring(space).trim() + " " + column0.substring(0, space).trim();
-					if (transposition.contains(swapped))
-						System.err.println("Possible transposition " + column0 + " and " + swapped);
-				}
+				checkTransposition(column0, transposition);
+
 				// Run the same transposition check on the junior person (column 1).
 				if (row.length < 2) continue;
-				column0 = row[1].trim();
-				if (transposition.add(column0)) {
-					int space = column0.indexOf(' ');
-					if (space == -1)
-						continue;
-					String swapped = column0.substring(space).trim() + " " + column0.substring(0, space).trim();
-					if (transposition.contains(swapped))
-						System.err.println("Possible transposition " + column0 + " and " + swapped);
-				}
+				checkTransposition(row[1].trim(), transposition);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read " + fileName, e);
@@ -94,23 +80,37 @@ public class HistoryClean {
 
 		historyEntries.sort((s1, s2) -> clean(s1).compareTo(clean(s2)));
 
-		PrintStream out;
-		try {
-			if (DEBUG) {
-				out = System.out;
-			} else {
-				out = new PrintStream(new File(fileName));
-			}
-			out.println(header);
+		if (DEBUG) {
+			System.out.println(header);
 			for (String entry : historyEntries)
-				out.println(entry);
-			if (!DEBUG) {
-				out.close();
-				System.out.println(fileName + " saved");
+				System.out.println(entry);
+		} else {
+			try (PrintStream out = new PrintStream(new File(fileName))) {
+				out.println(header);
+				for (String entry : historyEntries)
+					out.println(entry);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException("Failed to write " + fileName, e);
 			}
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Failed to write " + fileName, e);
+			System.out.println(fileName + " saved");
 		}
+	}
+
+	/**
+	 * Adds {@code name} to {@code seen} and, if it is new and contains a space,
+	 * checks whether the first/last name swap is already in the set. Prints a
+	 * warning to stderr if a likely transposition is found.
+	 *
+	 * <p>Extracted so the same logic applies to both the senior and junior columns
+	 * without the old {@code continue} escaping past the junior-column check.
+	 */
+	private static void checkTransposition(String name, java.util.Set<String> seen) {
+		if (!seen.add(name)) return; // already checked this name
+		int space = name.indexOf(' ');
+		if (space == -1) return;
+		String swapped = name.substring(space).trim() + " " + name.substring(0, space).trim();
+		if (seen.contains(swapped))
+			System.err.println("Possible transposition " + name + " and " + swapped);
 	}
 
 	/**

@@ -54,7 +54,13 @@ public abstract class RelationshipReader implements HistoryFileProcessor {
 	 */
 	public void load() throws IOException, CsvException {
 		try (CSVReader fileReader = new CSVReaderBuilder(new FileReader(fileName)).build()) {
-			fileReader.readNext(); // ignore header
+			String[] header = fileReader.readNext();
+			if (header == null || header.length < 3
+					|| !header[SENIOR_PERSON].trim().equalsIgnoreCase("SeniorPerson")
+					|| !header[JUNIOR_PERSON].trim().equalsIgnoreCase("JuniorPerson")
+					|| !header[RELATIONSHIP].trim().equalsIgnoreCase("Relationship"))
+				throw new IOException("Unexpected CSV header in " + fileName
+						+ " — expected: SeniorPerson,JuniorPerson,Relationship[,SeniorUrl]");
 
 			for (String[] row : fileReader.readAll()) {
 				if (row.length < 3)

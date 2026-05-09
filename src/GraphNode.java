@@ -24,8 +24,10 @@ public class GraphNode {
 	 * Must be called before constructing any {@code GraphNode} instances.
 	 *
 	 * @param path absolute path ending with a backslash, e.g. {@code "C:\Website\"}
+	 * @throws IllegalArgumentException if {@code path} is {@code null}
 	 */
 	public static void setPath(String path) {
+		if (path == null) throw new IllegalArgumentException("PATH must not be null");
 		PATH = path;
 	}
 
@@ -69,7 +71,7 @@ public class GraphNode {
 		}
 		userName = userName.trim();
 
-		StringBuffer idBuffer = new StringBuffer();
+		StringBuilder idBuffer = new StringBuilder();
 		char c;
 		for (int i = 0; i < userName.length(); i++) {
 			c = userName.charAt(i);
@@ -87,8 +89,9 @@ public class GraphNode {
 		this.name = name;
 		this.id = convertToId(name);
 		this.url = id + ".html";
-		File file = new File(PATH + "Images\\" + id + ".jpg");
-		hasImage = file.exists();
+		if (PATH == null)
+			throw new IllegalStateException("GraphNode.setPath() must be called before constructing nodes");
+		hasImage = new File(PATH + "Images\\" + id + ".jpg").exists();
 	}
 
 	/**
@@ -101,8 +104,9 @@ public class GraphNode {
 		this.name = name;
 		this.id = convertToId(name);
 		this.url = url.isEmpty() ? id + ".html" : url;
-		File file = new File(PATH + "Images\\" + id + ".jpg");
-		hasImage = file.exists();
+		if (PATH == null)
+			throw new IllegalStateException("GraphNode.setPath() must be called before constructing nodes");
+		hasImage = new File(PATH + "Images\\" + id + ".jpg").exists();
 	}
 
 	/**

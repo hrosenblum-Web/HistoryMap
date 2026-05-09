@@ -16,4 +16,7 @@ public interface HistoryFileProcessor {
 	/** CDN URL for the Mermaid.js ESM module used in all generated HTML pages. */
 	public static final String MERMAID_CDN =
 			"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+	/** Default base path used by all pipeline stages when no argument is supplied. */
+	public static final String DEFAULT_PATH = "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
 }

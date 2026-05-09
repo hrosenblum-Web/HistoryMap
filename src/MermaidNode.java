@@ -7,12 +7,6 @@
  */
 public class MermaidNode extends GraphNode {
 
-//	private static String PATH ;
-//
-//	public static void setPath(String path) {
-//		PATH=path;
-//	}
-//
 	/**
 	 * Constructs a Mermaid node for the given person name, linking to the local
 	 * biography page ({@code <id>.html}).

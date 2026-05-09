@@ -45,17 +45,17 @@ public class MermaidToImage {
                     .build();
 
             HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-            if (response.statusCode() == 200) {
-                Path path = Paths.get("diagram.png");
-                Files.copy(response.body(), path);
-                System.out.println("Image saved to: " + path.toAbsolutePath());
-            } else {
-                System.err.println("Failed to get image. Status: " + response.statusCode());
+            try (InputStream body = response.body()) {
+                if (response.statusCode() == 200) {
+                    Path path = Paths.get("diagram.png");
+                    Files.copy(body, path);
+                    System.out.println("Image saved to: " + path.toAbsolutePath());
+                } else {
+                    System.err.println("Failed to get image. Status: " + response.statusCode());
+                }
             }
-
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch diagram image", e);
         }
     }
 }

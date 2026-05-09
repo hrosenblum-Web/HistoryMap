@@ -24,7 +24,7 @@ public class ConvertIframe {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
 		File dir = new File(path);
 		int convertCounter = 0;
 		File[] dirFiles = dir.listFiles();

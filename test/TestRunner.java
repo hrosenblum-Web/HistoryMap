@@ -16,6 +16,7 @@ public class TestRunner {
             .selectors(
                 DiscoverySelectors.selectClass("GraphNodeTest"),
                 DiscoverySelectors.selectClass("HistoryCleanTest"),
+                DiscoverySelectors.selectClass("MermaidReaderTest"),
                 DiscoverySelectors.selectClass("SimpleReaderTest")
             )
             .build();
