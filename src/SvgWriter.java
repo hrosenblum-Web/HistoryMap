@@ -36,15 +36,21 @@ public class SvgWriter implements GraphWriter {
 	}
 
 	/**
-	 * Appends node definitions to the buffered diagram.
+	 * Appends node definitions to the buffered diagram, omitting {@code @{}}
+	 * image-metadata lines that mermaid.ink cannot resolve (local file paths)
+	 * and may not support (requires Mermaid v11+).
 	 *
 	 * @param names list of graph nodes to emit
 	 */
 	@Override
 	public void writeNames(List<GraphNode> names) {
 		diagram.append("\n\t%% Name section\n");
-		for (GraphNode gn : names)
-			diagram.append(gn).append("\n");
+		for (GraphNode gn : names) {
+			for (String line : gn.toString().split("\n", -1)) {
+				if (!line.contains("@{"))
+					diagram.append(line).append("\n");
+			}
+		}
 	}
 
 	/**
