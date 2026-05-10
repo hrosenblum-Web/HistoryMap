@@ -189,7 +189,7 @@ public class SimpleReader extends RelationshipReader {
 		GraphNode gn = nodes.get(personId);
 		out.printf("      %s((%s))%n", personId, cleanName(gn.getName()));
 		if (gn.hasImage()) {
-			out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
+			out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName().replace("\n", " "));
 		}
 		boolean rightArrow;
 		for (String relationship : relationships.keySet()) {
@@ -224,7 +224,7 @@ public class SimpleReader extends RelationshipReader {
 				out.printf("      %s([%s])%n", person, name);
 
 				if (gn.hasImage()) {
-					out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName());
+					out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName().replace("\n", " "));
 				}
 				out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
 			}

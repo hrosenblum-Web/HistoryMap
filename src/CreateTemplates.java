@@ -108,7 +108,8 @@ public class CreateTemplates implements HistoryFileProcessor {
 		for (String rootFileName : dirRootStrings) {
 			if (!rootFileName.endsWith(".html"))
 				continue;
-			String name = stripHtmlExtension(rootFileName);
+			String id = stripHtmlExtension(rootFileName);
+			String name = nameLookup.getOrDefault(id, id);
 			File pageFile = new File(relationshipPath + rootFileName);
 			if (!pageFile.exists()) {
 				change = true;

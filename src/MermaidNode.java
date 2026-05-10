@@ -62,7 +62,7 @@ public class MermaidNode extends GraphNode {
 			sb.append("@{ img: \"Images/");
 			sb.append(id);
 			sb.append(".jpg\", label: \"");
-			sb.append(name);
+			sb.append(name.replace("\n", " "));
 			sb.append("\", pos: \"b\", h: 400, constraint: \"on\" }");
 		}
 		return sb.toString();
