@@ -5,19 +5,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 /**
- * {@link GraphWriter} implementation that fetches a pre-rendered SVG from the
- * {@code mermaid.ink} API and writes a self-contained HTML page with the SVG
- * embedded directly — no client-side JavaScript required.
+ * {@link GraphWriter} implementation that fetches a pre-rendered SVG from
+ * {@code kroki.io} and writes a self-contained HTML page with the SVG embedded
+ * directly — no client-side JavaScript required.
  *
  * <p>Mermaid diagram text is buffered during {@link #writeNames} and
- * {@link #writeRelationships}; the HTTP request to {@code mermaid.ink} is made
- * once in {@link #close()}, which also writes the full HTML page to the stream.
- * Click directives in the diagram are rendered by {@code mermaid.ink} as SVG
- * {@code <a href>} elements, preserving node hyperlinks without JavaScript.
+ * {@link #writeRelationships}; in {@link #close()} it is POSTed as plain text
+ * to {@code kroki.io/mermaid/svg}, which returns the rendered SVG, and the
+ * full HTML page is written to the output stream.
  */
 public class SvgWriter implements GraphWriter {
 	private final PrintStream out;
@@ -59,30 +57,30 @@ public class SvgWriter implements GraphWriter {
 	}
 
 	/**
-	 * Base64-encodes the buffered diagram, fetches the rendered SVG from
-	 * {@code mermaid.ink}, and writes the complete HTML page to the output stream.
+	 * POSTs the buffered Mermaid diagram to {@code kroki.io/mermaid/svg}, embeds
+	 * the returned SVG in an HTML page, and writes it to the output stream.
 	 *
-	 * @throws RuntimeException if the HTTP request fails or returns a non-200 status
+	 * @throws RuntimeException if the HTTP request fails
 	 */
 	@Override
 	public void close() {
-		String base64 = Base64.getUrlEncoder().encodeToString(
-				diagram.toString().getBytes(StandardCharsets.UTF_8));
 		String svg;
 		try {
 			HttpClient client = HttpClient.newHttpClient();
 			HttpRequest request = HttpRequest.newBuilder()
-					.uri(URI.create("https://mermaid.ink/svg/" + base64))
+					.uri(URI.create("https://kroki.io/mermaid/svg"))
+					.header("Content-Type", "text/plain")
+					.POST(HttpRequest.BodyPublishers.ofString(diagram.toString(), StandardCharsets.UTF_8))
 					.build();
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() != 200)
-				throw new RuntimeException("mermaid.ink returned HTTP " + response.statusCode());
+				throw new RuntimeException("kroki.io returned HTTP " + response.statusCode());
 			svg = response.body();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("Interrupted while fetching SVG from mermaid.ink", e);
+			throw new RuntimeException("Interrupted while fetching SVG from kroki.io", e);
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to fetch SVG from mermaid.ink", e);
+			throw new RuntimeException("Failed to fetch SVG from kroki.io", e);
 		}
 		out.println("<!DOCTYPE html>");
 		out.println("<html>");
@@ -97,4 +95,5 @@ public class SvgWriter implements GraphWriter {
 		out.println("  </body>");
 		out.println("</html>");
 	}
+
 }
