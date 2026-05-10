@@ -49,23 +49,10 @@ public class HistoryClean {
 				if (column0.isEmpty())
 					continue;
 				line = new StringBuilder(4);
-				if (column0.contains("\n")) {
-					line.append("\"");
-					line.append(column0);
-					line.append("\"");
-				} else {
-					line.append(column0);
-				}
+				line.append(csvQuote(column0));
 				for (int i = 1; i < row.length; i++) {
-					String col = row[i].trim();
 					line.append(",");
-					if (col.contains("\n")) {
-						line.append("\"");
-						line.append(col);
-						line.append("\"");
-					} else {
-						line.append(col);
-					}
+					line.append(csvQuote(row[i].trim()));
 				}
 				historyEntries.add(line.toString());
 
@@ -133,6 +120,12 @@ public class HistoryClean {
 			return value.substring(1);
 		else
 			return value;
+	}
+
+	private static String csvQuote(String value) {
+		if (value.contains("\"") || value.contains(",") || value.contains("\n"))
+			return "\"" + value.replace("\"", "\"\"") + "\"";
+		return value;
 	}
 
 }
