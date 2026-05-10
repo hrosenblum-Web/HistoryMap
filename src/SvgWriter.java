@@ -60,7 +60,8 @@ public class SvgWriter implements GraphWriter {
 	}
 
 	/**
-	 * Zlib-compresses the buffered diagram, fetches the rendered SVG from
+	 * Wraps the buffered diagram in the JSON envelope mermaid.ink expects,
+	 * zlib-compresses it, fetches the rendered SVG from
 	 * {@code mermaid.ink/svg/pako:}, and writes the complete HTML page to the
 	 * output stream.
 	 *
@@ -70,7 +71,7 @@ public class SvgWriter implements GraphWriter {
 	public void close() {
 		String encoded;
 		try {
-			encoded = compress(diagram.toString());
+			encoded = compress(toJson(diagram.toString()));
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to compress diagram", e);
 		}
@@ -105,6 +106,23 @@ public class SvgWriter implements GraphWriter {
 		out.println("    </div>");
 		out.println("  </body>");
 		out.println("</html>");
+	}
+
+	private static String toJson(String diagram) {
+		StringBuilder sb = new StringBuilder("{\"code\":\"");
+		for (int i = 0; i < diagram.length(); i++) {
+			char c = diagram.charAt(i);
+			switch (c) {
+				case '"'  -> sb.append("\\\"");
+				case '\\' -> sb.append("\\\\");
+				case '\n' -> sb.append("\\n");
+				case '\r' -> sb.append("\\r");
+				case '\t' -> sb.append("\\t");
+				default   -> { if (c < 0x20) sb.append(String.format("\\u%04x", (int) c)); else sb.append(c); }
+			}
+		}
+		sb.append("\",\"mermaid\":{\"theme\":\"default\"}}");
+		return sb.toString();
 	}
 
 	private static String compress(String text) throws IOException {
