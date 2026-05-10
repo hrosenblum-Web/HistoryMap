@@ -57,8 +57,15 @@ public class HistoryClean {
 					line.append(column0);
 				}
 				for (int i = 1; i < row.length; i++) {
+					String col = row[i].trim();
 					line.append(",");
-					line.append(row[i].trim());
+					if (col.contains("\n")) {
+						line.append("\"");
+						line.append(col);
+						line.append("\"");
+					} else {
+						line.append(col);
+					}
 				}
 				historyEntries.add(line.toString());
 
