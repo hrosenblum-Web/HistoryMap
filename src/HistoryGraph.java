@@ -35,7 +35,7 @@ public class HistoryGraph {
 				gw.close();
 			} else {
 				try (PrintStream out = new PrintStream(new File(path + "index.html"))) {
-					GraphWriter gw = new MermaidWriter(out);
+					GraphWriter gw = new SvgWriter(out);
 					gw.writeNames(rr.getNodes());
 					gw.writeRelationships(rr.getRelationships());
 					gw.close();
