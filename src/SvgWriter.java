@@ -94,6 +94,10 @@ public class SvgWriter implements GraphWriter {
 			if (response.statusCode() != 200)
 				throw new RuntimeException("mermaid.ink returned HTTP " + response.statusCode());
 			svg = response.body();
+			String trimmed = svg.stripLeading();
+			if (!trimmed.startsWith("<svg") && !trimmed.startsWith("<?xml"))
+				throw new RuntimeException("mermaid.ink returned unexpected content: "
+						+ svg.substring(0, Math.min(200, svg.length())));
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new RuntimeException("Interrupted while fetching SVG from mermaid.ink", e);

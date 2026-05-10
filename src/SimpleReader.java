@@ -240,7 +240,7 @@ public class SimpleReader extends RelationshipReader {
 	}
 
 	private String cleanName(String name) {
-		return name.replace("(", "").replace(")", "");
+		return name.replace("(", "").replace(")", "").replace("\n", " ");
 	}
 
 }
