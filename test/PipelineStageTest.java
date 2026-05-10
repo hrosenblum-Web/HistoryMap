@@ -20,7 +20,7 @@ public class PipelineStageTest {
 		try {
 			HistoryGraph.main(new String[]{tempDir.toString() + "\\"});
 		} catch (RuntimeException e) {
-			Assumptions.abort("Skipping: kroki.io unavailable: " + e.getMessage());
+			Assumptions.abort("Skipping: mermaid.ink unavailable: " + e.getMessage());
 		}
 
 		Path indexHtml = tempDir.resolve("index.html");

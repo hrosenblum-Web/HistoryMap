@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
@@ -5,17 +6,20 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * {@link GraphWriter} implementation that fetches a pre-rendered SVG from
- * {@code kroki.io} and writes a self-contained HTML page with the SVG embedded
- * directly — no client-side JavaScript required.
+ * {@code mermaid.ink} and writes a self-contained HTML page with the SVG
+ * embedded directly — no client-side JavaScript required.
  *
  * <p>Mermaid diagram text is buffered during {@link #writeNames} and
- * {@link #writeRelationships}; in {@link #close()} it is POSTed as plain text
- * to {@code kroki.io/mermaid/svg}, which returns the rendered SVG, and the
- * full HTML page is written to the output stream.
+ * {@link #writeRelationships}; in {@link #close()} it is zlib-compressed,
+ * base64url-encoded, and sent to {@code mermaid.ink/svg/pako:} as a GET
+ * request. This keeps URLs short enough to avoid HTTP 414 on large graphs.
  */
 public class SvgWriter implements GraphWriter {
 	private final PrintStream out;
@@ -28,7 +32,6 @@ public class SvgWriter implements GraphWriter {
 	 */
 	public SvgWriter(PrintStream out) {
 		this.out = out;
-		diagram.append("%%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%\n");
 		diagram.append("flowchart TD\n");
 	}
 
@@ -57,30 +60,38 @@ public class SvgWriter implements GraphWriter {
 	}
 
 	/**
-	 * POSTs the buffered Mermaid diagram to {@code kroki.io/mermaid/svg}, embeds
-	 * the returned SVG in an HTML page, and writes it to the output stream.
+	 * Zlib-compresses the buffered diagram, fetches the rendered SVG from
+	 * {@code mermaid.ink/svg/pako:}, and writes the complete HTML page to the
+	 * output stream.
 	 *
-	 * @throws RuntimeException if the HTTP request fails
+	 * @throws RuntimeException if compression or the HTTP request fails
 	 */
 	@Override
 	public void close() {
+		String encoded;
+		try {
+			encoded = compress(diagram.toString());
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to compress diagram", e);
+		}
 		String svg;
 		try {
-			HttpClient client = HttpClient.newHttpClient();
+			HttpClient client = HttpClient.newBuilder()
+					.connectTimeout(Duration.ofSeconds(30))
+					.build();
 			HttpRequest request = HttpRequest.newBuilder()
-					.uri(URI.create("https://kroki.io/mermaid/svg"))
-					.header("Content-Type", "text/plain")
-					.POST(HttpRequest.BodyPublishers.ofString(diagram.toString(), StandardCharsets.UTF_8))
+					.uri(URI.create("https://mermaid.ink/svg/pako:" + encoded))
+					.timeout(Duration.ofSeconds(60))
 					.build();
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() != 200)
-				throw new RuntimeException("kroki.io returned HTTP " + response.statusCode());
+				throw new RuntimeException("mermaid.ink returned HTTP " + response.statusCode());
 			svg = response.body();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("Interrupted while fetching SVG from kroki.io", e);
+			throw new RuntimeException("Interrupted while fetching SVG from mermaid.ink", e);
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to fetch SVG from kroki.io", e);
+			throw new RuntimeException("Failed to fetch SVG from mermaid.ink", e);
 		}
 		out.println("<!DOCTYPE html>");
 		out.println("<html>");
@@ -96,4 +107,17 @@ public class SvgWriter implements GraphWriter {
 		out.println("</html>");
 	}
 
+	private static String compress(String text) throws IOException {
+		Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, false);
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			try (DeflaterOutputStream dos = new DeflaterOutputStream(baos, deflater)) {
+				dos.write(text.getBytes(StandardCharsets.UTF_8));
+			}
+			return java.util.Base64.getUrlEncoder().withoutPadding()
+					.encodeToString(baos.toByteArray());
+		} finally {
+			deflater.end();
+		}
+	}
 }
