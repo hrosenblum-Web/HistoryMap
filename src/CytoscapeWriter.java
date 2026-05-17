@@ -1,5 +1,9 @@
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -54,10 +58,22 @@ public class CytoscapeWriter implements GraphWriter {
     @Override
     public void writeNames(List<GraphNode> names) {
         for (GraphNode gn : names) {
-            String escapedName = gn.getName().replace("\"", "\\\"");
-            String img = gn.hasImage()
-                ? String.format(",image:\"Images/%s.jpg\"", gn.getId())
-                : "";
+            String escapedName = gn.getName()
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "")
+                .replace("\n", " ");
+            String img = "";
+            if (gn.hasImage()) {
+                try {
+                    byte[] bytes = Files.readAllBytes(
+                        Paths.get(GraphNode.PATH + "Images\\" + gn.getId() + ".jpg"));
+                    img = ",image:\"data:image/jpeg;base64,"
+                        + Base64.getEncoder().encodeToString(bytes) + "\"";
+                } catch (IOException e) {
+                    // image unreadable — omit it
+                }
+            }
             nodeJson.add(String.format(
                 "{data:{id:\"%s\",label:\"%s\",url:\"%s\"%s}}",
                 gn.getId(), escapedName, gn.getUrl(), img));
@@ -111,11 +127,6 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("            'font-size':'11px',");
         out.println("            width:40,height:40");
         out.println("          }},");
-        out.println("          {selector:'node[image]',style:{");
-        out.println("            'background-image':'data(image)',");
-        out.println("            'background-fit':'cover',");
-        out.println("            'background-clip':'node'");
-        out.println("          }},");
         out.println("          {selector:'edge',style:{");
         out.println("            'curve-style':'bezier',");
         out.println("            'target-arrow-shape':'triangle',");
@@ -145,6 +156,10 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("        ]");
         out.println("      });");
         out.println("      cy.on('tap','node',e => window.open(e.target.data('url'),'_blank'));");
+        out.println("      cy.nodes().filter(n => n.data('image')).forEach(n => {");
+        out.println("        n.style({'background-image': n.data('image'),");
+        out.println("                 'background-fit': 'cover', 'background-opacity': 0});");
+        out.println("      });");
         out.println("    </script>");
         out.println("  </body>");
         out.println("</html>");
