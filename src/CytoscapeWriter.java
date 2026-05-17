@@ -155,7 +155,11 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("          }}");
         out.println("        ]");
         out.println("      });");
-        out.println("      cy.on('tap','node',e => { window.location.href = e.target.data('url'); });");
+        out.println("      cy.on('tap','node',e => {");
+        out.println("        var url = e.target.data('url');");
+        out.println("        if (url.startsWith('http')) window.open(url,'_blank');");
+        out.println("        else window.location.href = url;");
+        out.println("      });");
         out.println("      cy.nodes().filter(n => n.data('image')).forEach(n => {");
         out.println("        n.style({'background-image': n.data('image'),");
         out.println("                 'background-fit': 'cover', 'background-opacity': 0,");
