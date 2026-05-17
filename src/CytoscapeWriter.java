@@ -74,9 +74,10 @@ public class CytoscapeWriter implements GraphWriter {
                     // image unreadable — omit it
                 }
             }
+            String external = gn.hasExternalUrl() ? ",external:true" : "";
             nodeJson.add(String.format(
-                "{data:{id:\"%s\",label:\"%s\",url:\"%s\"%s}}",
-                gn.getId(), escapedName, gn.getUrl(), img));
+                "{data:{id:\"%s\",label:\"%s\",url:\"%s\"%s%s}}",
+                gn.getId(), escapedName, gn.getUrl(), img, external));
         }
     }
 
@@ -126,6 +127,13 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("            'text-margin-y':'4px',");
         out.println("            'font-size':'11px',");
         out.println("            width:70,height:70");
+        out.println("          }},");
+        out.println("          {selector:'node[external]',style:{");
+        out.println("            'background-color':'black'");
+        out.println("          }},");
+        out.println("          {selector:'node[image][!external]',style:{");
+        out.println("            'border-width':3,");
+        out.println("            'border-color':'#6FB1FC'");
         out.println("          }},");
         out.println("          {selector:'edge',style:{");
         out.println("            'curve-style':'bezier',");
