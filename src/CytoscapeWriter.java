@@ -125,7 +125,7 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("            'text-valign':'bottom',");
         out.println("            'text-margin-y':'4px',");
         out.println("            'font-size':'11px',");
-        out.println("            width:40,height:40");
+        out.println("            width:70,height:70");
         out.println("          }},");
         out.println("          {selector:'edge',style:{");
         out.println("            'curve-style':'bezier',");
@@ -158,7 +158,8 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("      cy.on('tap','node',e => window.open(e.target.data('url'),'_blank'));");
         out.println("      cy.nodes().filter(n => n.data('image')).forEach(n => {");
         out.println("        n.style({'background-image': n.data('image'),");
-        out.println("                 'background-fit': 'cover', 'background-opacity': 0});");
+        out.println("                 'background-fit': 'cover', 'background-opacity': 0,");
+        out.println("                 'background-position-y': '0%', 'shape': 'rectangle'});");
         out.println("      });");
         out.println("    </script>");
         out.println("  </body>");
