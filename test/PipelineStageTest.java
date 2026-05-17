@@ -1,4 +1,3 @@
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,18 +16,12 @@ public class PipelineStageTest {
 			pw.println("Ueshiba,Tohei,sensei,");
 		}
 
-		try {
-			HistoryGraph.main(new String[]{tempDir.toString() + "\\"});
-		} catch (RuntimeException e) {
-			Assumptions.abort("Skipping: mermaid.ink unavailable: " + e.getMessage());
-		}
+		HistoryGraph.main(new String[]{tempDir.toString() + "\\"});
 
 		Path indexHtml = tempDir.resolve("index.html");
 		assertTrue(Files.exists(indexHtml), "index.html should be created");
 		String content = Files.readString(indexHtml);
-		Assumptions.assumeTrue(content.contains("<svg"),
-				"Skipping: mermaid.ink returned non-SVG content");
-		assertTrue(content.contains("<svg"), "index.html should contain embedded SVG");
+		assertTrue(content.contains("cytoscape"), "index.html should include Cytoscape");
 		assertTrue(content.contains("Ueshiba"), "index.html should reference Ueshiba");
 		assertTrue(content.contains("Tohei"), "index.html should reference Tohei");
 	}

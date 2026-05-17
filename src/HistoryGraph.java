@@ -4,20 +4,22 @@ import java.io.PrintStream;
 import com.opencsv.exceptions.CsvException;
 
 /**
- * Pipeline stage 2: generates the main Mermaid.js relationship graph.
+ * Pipeline stage 2: generates the main relationship graph as {@code index.html}.
  *
- * <p>Reads the cleaned {@code History.csv}, builds node and edge definitions
- * using {@link MermaidReader}, and writes a self-contained {@code index.html}
- * via {@link MermaidWriter}. The result is a top-down flowchart of the full
- * martial arts lineage.
+ * <p>Reads the cleaned {@code History.csv} and writes a self-contained HTML page.
+ * Set {@link #USE_CYTOSCAPE} to {@code true} for an interactive Cytoscape.js graph
+ * (default) or {@code false} to fall back to the Mermaid.js renderer (controlled
+ * by {@link #MERMAID}). Reader and writer are always selected as a matched pair.
  */
 public class HistoryGraph {
-	private static final boolean DEBUG = false;
+	/** When {@code true}, use Cytoscape.js; when {@code false}, use Mermaid or SVG. */
+	private static final boolean USE_CYTOSCAPE = true;
+	/** Only consulted when {@link #USE_CYTOSCAPE} is {@code false}. */
+	private static final boolean MERMAID = true;
 
 	/**
 	 * Entry point for the graph generation stage. Writes {@code index.html} to
-	 * the configured path. When {@code DEBUG} is {@code true}, output goes to
-	 * stdout instead of the file.
+	 * the configured path.
 	 *
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
@@ -25,21 +27,19 @@ public class HistoryGraph {
 		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
 		try {
 			GraphNode.setPath(path);
-			RelationshipReader rr = new MermaidReader(path + "History.csv");
+			RelationshipReader rr = USE_CYTOSCAPE
+					? new CytoscapeReader(path + "History.csv")
+					: new MermaidReader(path + "History.csv");
 			rr.load();
 
-			if (DEBUG) {
-				GraphWriter gw = new MermaidWriter(System.out);
+			try (PrintStream out = new PrintStream(new File(path + "index.html"))) {
+				GraphWriter gw;
+				if (USE_CYTOSCAPE)   gw = new CytoscapeWriter(out);
+				else if (MERMAID)    gw = new MermaidWriter(out);
+				else                 gw = new SvgWriter(out);
 				gw.writeNames(rr.getNodes());
 				gw.writeRelationships(rr.getRelationships());
 				gw.close();
-			} else {
-				try (PrintStream out = new PrintStream(new File(path + "index.html"))) {
-					GraphWriter gw = new SvgWriter(out);
-					gw.writeNames(rr.getNodes());
-					gw.writeRelationships(rr.getRelationships());
-					gw.close();
-				}
 				System.out.println("file " + path + "index.html created");
 			}
 		} catch (IOException | CsvException e) {

@@ -14,6 +14,7 @@ public class TestRunner {
     public static void main(String[] args) {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
             .selectors(
+                DiscoverySelectors.selectClass(CytoscapeReaderTest.class),
                 DiscoverySelectors.selectClass(GraphNodeTest.class),
                 DiscoverySelectors.selectClass(HistoryCleanTest.class),
                 DiscoverySelectors.selectClass(MermaidReaderTest.class),
