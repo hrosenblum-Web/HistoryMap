@@ -108,8 +108,9 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("  <body>");
         out.println("    <div id=\"cy\"></div>");
         out.println("    <div id=\"controls\" style=\"position:fixed;top:10px;left:10px;z-index:999;background:rgba(255,255,255,0.9);padding:8px 12px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.2);font-family:sans-serif;font-size:13px;\">");
-        out.println("      <label for=\"filterType\">Filter: </label>");
-        out.println("      <select id=\"filterType\"><option value=\"all\">All relationships</option></select>");
+        out.println("      <label for=\"filterType\" style=\"display:block;margin-bottom:4px;\">Filter relationships:</label>");
+        out.println("      <select id=\"filterType\" multiple size=\"5\" style=\"display:block;\"></select>");
+        out.println("      <div style=\"font-size:11px;color:#888;margin-top:4px;\">None selected = show all</div>");
         out.println("    </div>");
         out.println("    <script src=\"" + CYTOSCAPE_CDN + "\"></script>");
         out.println("    <script src=\"" + DAGRE_CDN + "\"></script>");
@@ -187,10 +188,10 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("        filterEl.appendChild(opt);");
         out.println("      });");
         out.println("      filterEl.addEventListener('change', function(){");
-        out.println("        var val = this.value;");
+        out.println("        var selected = Array.from(this.selectedOptions).map(function(o){ return o.value; });");
         out.println("        cy.elements().show();");
-        out.println("        if (val !== 'all') {");
-        out.println("          cy.edges().filter(function(e){ return e.data('type') !== val; }).hide();");
+        out.println("        if (selected.length > 0) {");
+        out.println("          cy.edges().filter(function(e){ return selected.indexOf(e.data('type')) === -1; }).hide();");
         out.println("          cy.nodes().filter(function(n){");
         out.println("            return n.connectedEdges(':visible').length === 0 && n.connectedEdges().length > 0;");
         out.println("          }).hide();");
