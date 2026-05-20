@@ -17,6 +17,24 @@ public interface HistoryFileProcessor {
 	public static final String MERMAID_CDN =
 			"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 
+	/** Mermaid diagram init directive that disables HTML labels for all generated charts. */
+	public static final String MERMAID_INIT = "%%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%";
+
 	/** Default base path used by all pipeline stages when no argument is supplied. */
 	public static final String DEFAULT_PATH = "C:\\Users\\user\\Desktop\\Demo\\WebsiteTesting\\";
+
+	/** Returns args[0] if provided, otherwise DEFAULT_PATH. */
+	public static String resolvePath(String[] args) {
+		return args.length > 0 ? args[0] : DEFAULT_PATH;
+	}
+
+	/**
+	 * Wraps {@code value} in double quotes and escapes embedded quotes if the value
+	 * contains a double quote, comma, or newline — characters that would break CSV parsing.
+	 */
+	public static String csvQuote(String value) {
+		if (value.contains("\"") || value.contains(",") || value.contains("\n"))
+			return "\"" + value.replace("\"", "\"\"") + "\"";
+		return value;
+	}
 }

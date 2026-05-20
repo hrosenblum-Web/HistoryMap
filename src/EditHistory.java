@@ -45,7 +45,6 @@ public class EditHistory extends JFrame implements HistoryFileProcessor {
 		setSize(1100, 600);
 		setLocationRelativeTo(null);
 
-		// Path bar (top)
 		pathField = new JTextField(DEFAULT_PATH + "History.csv", 50);
 		JButton loadBtn = new JButton("Load");
 		loadBtn.addActionListener(e -> loadCsv());
@@ -55,15 +54,12 @@ public class EditHistory extends JFrame implements HistoryFileProcessor {
 		pathPanel.add(pathField);
 		pathPanel.add(loadBtn);
 
-		// Editable table (centre)
 		tableModel = new DefaultTableModel(COLUMN_NAMES, 0) {
-			// All cells are editable so the table behaves like a spreadsheet.
 			@Override public boolean isCellEditable(int row, int col) { return true; }
 		};
 		table = new JTable(tableModel);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setRowHeight(22);
-		// Column order must stay fixed to match the CSV column indices.
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getColumnModel().getColumn(SENIOR_PERSON).setPreferredWidth(200);
 		table.getColumnModel().getColumn(JUNIOR_PERSON).setPreferredWidth(200);
@@ -77,7 +73,6 @@ public class EditHistory extends JFrame implements HistoryFileProcessor {
 			@Override public void actionPerformed(ActionEvent e) { deleteRow(); }
 		});
 
-		// Button bar (bottom)
 		JButton addBtn    = new JButton("Add Row");
 		JButton deleteBtn = new JButton("Delete Row");
 		JButton saveBtn   = new JButton("Save");
@@ -151,7 +146,7 @@ public class EditHistory extends JFrame implements HistoryFileProcessor {
 				StringBuilder line = new StringBuilder();
 				for (int col = 0; col < 4; col++) {
 					if (col > 0) line.append(",");
-					line.append(csvQuote(tableModel.getValueAt(row, col).toString().trim()));
+					line.append(HistoryFileProcessor.csvQuote(tableModel.getValueAt(row, col).toString().trim()));
 				}
 				out.println(line);
 			}
@@ -185,22 +180,6 @@ public class EditHistory extends JFrame implements HistoryFileProcessor {
 		int selected = table.getSelectedRow();
 		if (selected >= 0)
 			tableModel.removeRow(selected);
-	}
-
-	/**
-	 * Wraps {@code value} in double quotes and escapes any embedded quotes if
-	 * the value contains a double quote, a comma, or a newline — the three
-	 * characters that would otherwise break CSV parsing. Identical to the logic
-	 * in {@link HistoryClean} so files remain round-trippable through that stage.
-	 *
-	 * @param value raw cell value
-	 * @return {@code value} unchanged, or {@code value} wrapped in {@code "..."} with
-	 *         internal {@code "} doubled
-	 */
-	private static String csvQuote(String value) {
-		if (value.contains("\"") || value.contains(",") || value.contains("\n"))
-			return "\"" + value.replace("\"", "\"\"") + "\"";
-		return value;
 	}
 
 	/**

@@ -24,7 +24,7 @@ public class ConvertIframe {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
+		String path = HistoryFileProcessor.resolvePath(args);
 		File dir = new File(path);
 		int convertCounter = 0;
 		File[] dirFiles = dir.listFiles();
@@ -37,14 +37,21 @@ public class ConvertIframe {
 			if (!name.endsWith(".html")) continue;
 
 			try {
+				// Quick scan: skip files that have no <iframe> to inline.
+				boolean hasIframe = false;
+				try (Scanner scan = new Scanner(mainFile)) {
+					while (scan.hasNextLine()) {
+						if (scan.nextLine().contains("<iframe")) { hasIframe = true; break; }
+					}
+				}
+				if (!hasIframe) continue;
+
 				List<String> lines = new ArrayList<>();
-				boolean changed = false;
 
 				try (Scanner data = new Scanner(mainFile)) {
 					while (data.hasNextLine()) {
 						String line = data.nextLine();
 						if (line.contains("<iframe")) {
-							changed = true;
 							// Extract the src attribute value with simple string indexing.
 							// This works because CreateTemplates always writes the iframe on
 							// a single line with src= as the first attribute.
@@ -69,13 +76,10 @@ public class ConvertIframe {
 					}
 				}
 
-				if (!changed)
-					continue;
 				convertCounter++;
 				try (PrintStream ps = new PrintStream(mainFile)) {
-					for (String line : lines) {
+					for (String line : lines)
 						ps.println(line);
-					}
 				}
 				if (DEBUG) System.out.println(name + " updated");
 			} catch (FileNotFoundException e) {

@@ -35,7 +35,7 @@ public class GraphNode {
 	 * Characters replaced during name-to-ID conversion.
 	 * Covers common diacritics found in Japanese, Korean, and European martial arts names.
 	 */
-	private final Map<Character, Character> remap = Map.ofEntries(
+	private static final Map<Character, Character> remap = Map.ofEntries(
 			Map.entry(' ',  '_'),
 			Map.entry('\'', '_'),
 			Map.entry('ō',  'o'), Map.entry('Ō',  'O'),
@@ -60,7 +60,7 @@ public class GraphNode {
 	 * @param userName raw display name from the CSV
 	 * @return sanitized identifier string
 	 */
-	private String convertToId(String userName) {
+	private static String convertToId(String userName) {
 		int index = userName.indexOf('\n');
 		if (index > -1) {
 			userName = userName.substring(0, index);
@@ -86,12 +86,7 @@ public class GraphNode {
 	 * @param name display name as it appears in the CSV
 	 */
 	public GraphNode(String name) {
-		this.name = name;
-		this.id = convertToId(name);
-		this.url = id + ".html";
-		if (PATH == null)
-			throw new IllegalStateException("GraphNode.setPath() must be called before constructing nodes");
-		hasImage = new File(PATH + "Images\\" + id + ".jpg").exists();
+		this(name, "");
 	}
 
 	/**

@@ -67,7 +67,7 @@ public class CytoscapeWriter implements GraphWriter {
             if (gn.hasImage()) {
                 try {
                     byte[] bytes = Files.readAllBytes(
-                        Paths.get(GraphNode.PATH + "Images\\" + gn.getId() + ".jpg"));
+                        Paths.get(GraphNode.PATH, gn.getImage()));
                     img = ",image:\"data:image/jpeg;base64,"
                         + Base64.getEncoder().encodeToString(bytes) + "\"";
                 } catch (IOException e) {

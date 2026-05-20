@@ -30,7 +30,7 @@ public class CreateTemplates implements HistoryFileProcessor {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String rootPath = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
+		String rootPath = HistoryFileProcessor.resolvePath(args);
 		String relationshipPath = rootPath + "Relationships\\";
 		String timelinePath = rootPath + "timeline\\";
 
@@ -84,8 +84,9 @@ public class CreateTemplates implements HistoryFileProcessor {
 		// Also create root biography pages for people with external URLs who may not
 		// have appeared in the Relationships/ dir yet.
 		System.out.println("-------------------------------------");
-		for (String name : external.keySet()) {
-			String id = external.get(name).getId();
+		for (Map.Entry<String, GraphNode> extEntry : external.entrySet()) {
+			String name = extEntry.getKey();
+			String id = extEntry.getValue().getId();
 			File pageFile = new File(rootPath + id + ".html");
 			if (writeMainStubPage(pageFile, name, id, external, timelinePath)) {
 				change = true;
@@ -180,8 +181,9 @@ public class CreateTemplates implements HistoryFileProcessor {
 				out.print("    <p><a href=\"Timeline/" + htmlFileName + "\"\r\n"
 						+ "       target=\"_self\">" + name + " Timeline</a></p>\r\n");
 
-			if (external.containsKey(name)) {
-				String page = external.get(name).getUrl();
+			GraphNode externalNode = external.get(name);
+			if (externalNode != null) {
+				String page = externalNode.getUrl();
 				if (!page.contains("wikipedia"))
 					out.print("    <p><a href=\"" + page + "\"\r\n"
 							+ "       target=\"_blank\">" + name + " External link</a></p>\r\n");

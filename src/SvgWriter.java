@@ -22,6 +22,10 @@ import java.util.zip.DeflaterOutputStream;
  * request. This keeps URLs short enough to avoid HTTP 414 on large graphs.
  */
 public class SvgWriter implements GraphWriter {
+	private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+			.connectTimeout(Duration.ofSeconds(30))
+			.build();
+
 	private final PrintStream out;
 	private final StringBuilder diagram = new StringBuilder();
 
@@ -46,9 +50,13 @@ public class SvgWriter implements GraphWriter {
 	public void writeNames(List<GraphNode> names) {
 		diagram.append("\n\t%% Name section\n");
 		for (GraphNode gn : names) {
-			for (String line : gn.toString().split("\n", -1)) {
-				if (!line.contains("@{"))
-					diagram.append(line).append("\n");
+			if (gn.hasImage()) {
+				for (String line : gn.toString().split("\n", -1)) {
+					if (!line.contains("@{"))
+						diagram.append(line).append("\n");
+				}
+			} else {
+				diagram.append(gn.toString()).append("\n");
 			}
 		}
 	}
@@ -83,14 +91,11 @@ public class SvgWriter implements GraphWriter {
 		}
 		String svg;
 		try {
-			HttpClient client = HttpClient.newBuilder()
-					.connectTimeout(Duration.ofSeconds(30))
-					.build();
 			HttpRequest request = HttpRequest.newBuilder()
 					.uri(URI.create("https://mermaid.ink/svg/pako:" + encoded))
 					.timeout(Duration.ofSeconds(60))
 					.build();
-			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() != 200)
 				throw new RuntimeException("mermaid.ink returned HTTP " + response.statusCode());
 			svg = response.body();

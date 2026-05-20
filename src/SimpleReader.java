@@ -71,49 +71,27 @@ public class SimpleReader extends RelationshipReader {
 	protected void createRelationship(String id1, String id2, String relationship) {
 		if (relationship.isEmpty())
 			return;
-		Map<String, List<String>> relationships;
-		List<String> ids;
 		// Capitalize so labels display consistently regardless of CSV casing.
 		relationship = Character.toUpperCase(relationship.charAt(0)) + relationship.substring(1).toLowerCase();
 
-		// Expand abbreviated labels that OpenCSV may split on whitespace.
-		if (relationship.equals("Trained"))
-			relationship += " by";
+		if (relationship.equals("Trained"))    relationship += " by";
+		if (relationship.equals("Maybe"))      relationship += " taught by";
+		if (relationship.equals("Family"))     relationship = "Earlier generation";
 
-		if (relationship.equals("Maybe"))
-			relationship += " taught by";
+		// Store id1 under id2's entry: senior's perspective (e.g. Tohei's page lists Ueshiba as "Sensei").
+		relationshipMap.computeIfAbsent(id2, k -> new HashMap<>())
+		               .computeIfAbsent(relationship, k -> new ArrayList<>())
+		               .add(id1);
 
-		// "Family" is ambiguous — disambiguate by direction before storing.
-		if (relationship.equals("Family"))
-			relationship = "Earlier generation";
+		// Flip the label for the reverse direction: junior's perspective (e.g. Ueshiba's page lists Tohei as "Deshi").
+		if (relationship.equals("Sensei"))             relationship = "Deshi";
+		if (relationship.equals("Maybe taught by"))    relationship = "Maybe taught";
+		if (relationship.equals("Trained by"))         relationship = "Trained";
+		if (relationship.equals("Earlier generation")) relationship = "Later generation";
 
-		// Store id1 under id2's entry using the as-written label (senior's perspective).
-		// e.g. for row "Ueshiba, Tohei, Sensei": Tohei's page lists Ueshiba as "Sensei".
-		relationships = relationshipMap.getOrDefault(id2, new HashMap<>());
-		ids = relationships.getOrDefault(relationship, new ArrayList<>());
-		ids.add(id1);
-		relationships.put(relationship, ids);
-		relationshipMap.put(id2, relationships);
-
-		// Flip the label before storing the reverse direction (junior's perspective).
-		// e.g. Ueshiba's page lists Tohei as "Deshi".
-		if (relationship.equals("Sensei"))
-			relationship = "Deshi";
-
-		if (relationship.equals("Maybe taught by"))
-			relationship = "Maybe taught";
-
-		if (relationship.equals("Trained by"))
-			relationship = "Trained";
-
-		if (relationship.equals("Earlier generation"))
-			relationship = "Later generation";
-
-		relationships = relationshipMap.getOrDefault(id1, new HashMap<>());
-		ids = relationships.getOrDefault(relationship, new ArrayList<>());
-		ids.add(id2);
-		relationships.put(relationship, ids);
-		relationshipMap.put(id1, relationships);
+		relationshipMap.computeIfAbsent(id1, k -> new HashMap<>())
+		               .computeIfAbsent(relationship, k -> new ArrayList<>())
+		               .add(id2);
 	}
 
 	/**
@@ -182,39 +160,29 @@ public class SimpleReader extends RelationshipReader {
 				+ "  <hr/>\n"
 				+ "  <h3>Relationship Chart</h3>\n"
 				+ "   <pre class=\"mermaid\">\n"
-				+ "      %%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%\n"
+				+ "      " + HistoryFileProcessor.MERMAID_INIT + "\n"
 				+ "      flowchart LR\n");
 
 		Map<String, List<String>> relationships = relationshipMap.get(personId);
 		GraphNode gn = nodes.get(personId);
 		out.printf("      %s((%s))%n", personId, cleanName(gn.getName()));
-		if (gn.hasImage()) {
-			out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName().replace("\n", " "));
-		}
-		boolean rightArrow;
-		for (String relationship : relationships.keySet()) {
+		printImageAnnotation(gn, out);
+		for (Map.Entry<String, List<String>> entry : relationships.entrySet()) {
+			String relationship = entry.getKey();
 			out.printf("%n      %%%% %s relationships%n", relationship);
-			// Arrow points toward the subject when the relationship is "incoming"
-			// (the subject is the junior/recipient). For outgoing relationships the
-			// subject points outward to the relationship node.
-			if (relationship.equalsIgnoreCase("sensei") ||
+			// Arrow direction: incoming relationships (subject is junior/recipient) point toward subject.
+			boolean rightArrow = !(relationship.equalsIgnoreCase("sensei") ||
 					relationship.equalsIgnoreCase("Maybe taught by") ||
 					relationship.equalsIgnoreCase("Trained by") ||
-					relationship.equalsIgnoreCase("Earlier generation"))
-				rightArrow = false;
-			else
-				rightArrow = true;
-			// Mermaid node IDs cannot contain spaces; replace with underscores.
+					relationship.equalsIgnoreCase("Earlier generation"));
 			String relationshipId = relationship.replace(" ", "_");
-			// Only emit a labelled node declaration when the ID was changed; single-word
-			// relationship types are used as their own label implicitly.
 			if (!relationshipId.equals(relationship))
 				out.printf("      %s[%s]%n", relationshipId, relationship);
 			if (rightArrow)
 				out.printf("      %s --> %s%n", personId, relationshipId);
 			else
 				out.printf("      %s --> %s%n", relationshipId, personId);
-			for (String person : relationships.get(relationship)) {
+			for (String person : entry.getValue()) {
 				gn = nodes.get(person);
 				String name = cleanName(gn.getName());
 				if (rightArrow)
@@ -222,10 +190,7 @@ public class SimpleReader extends RelationshipReader {
 				else
 					out.printf("      %s --> %s%n", person, relationshipId);
 				out.printf("      %s([%s])%n", person, name);
-
-				if (gn.hasImage()) {
-					out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n", gn.getId(), gn.getImage(), gn.getName().replace("\n", " "));
-				}
+				printImageAnnotation(gn, out);
 				out.printf("      click %s \"%s\" _top%n", person, gn.getUrl());
 			}
 		}
@@ -237,6 +202,12 @@ public class SimpleReader extends RelationshipReader {
 				+ "   import mermaid from '" + HistoryFileProcessor.MERMAID_CDN + "';\n"
 				+ "   mermaid.initialize({ startOnLoad: true });\n"
 				+ "</script>");
+	}
+
+	private static void printImageAnnotation(GraphNode gn, PrintStream out) {
+		if (gn.hasImage())
+			out.printf("      %s@{ img: \"%s\", label: \"%s\", h: 100, constraint: \"on\" }%n",
+					gn.getId(), gn.getImage(), gn.getName().replace("\n", " "));
 	}
 
 	private String cleanName(String name) {

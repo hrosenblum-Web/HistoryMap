@@ -32,7 +32,7 @@ public class HistoryClean {
 	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
 	 */
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;
+		String path = HistoryFileProcessor.resolvePath(args);
 		String fileName = path + "History.csv";
 
 		Set<String> transposition = new HashSet<>();
@@ -56,13 +56,7 @@ public class HistoryClean {
 				}
 				historyEntries.add(line.toString());
 
-				// Detect likely first/last name transpositions: if both "John Smith" and
-				// "Smith John" appear in the data, one is almost certainly a typo.
-				// add() returns false when the name was already in the set, meaning
-				// we've seen this exact string before and don't need to check again.
 				checkTransposition(column0, transposition);
-
-				// Run the same transposition check on the junior person (column 1).
 				if (row.length < 2) continue;
 				checkTransposition(row[1].trim(), transposition);
 			}
@@ -123,9 +117,7 @@ public class HistoryClean {
 	}
 
 	private static String csvQuote(String value) {
-		if (value.contains("\"") || value.contains(",") || value.contains("\n"))
-			return "\"" + value.replace("\"", "\"\"") + "\"";
-		return value;
+		return HistoryFileProcessor.csvQuote(value);
 	}
 
 }

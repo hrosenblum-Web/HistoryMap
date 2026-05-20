@@ -19,7 +19,6 @@ public class MermaidWriter implements GraphWriter {
 	 * @param out stream to write the HTML output to (typically a file stream)
 	 */
 	public MermaidWriter(PrintStream out) {
-		super();
 		this.out = out;
 		out.println("<!DOCTYPE html>");
 		out.println("<html>");
@@ -30,7 +29,7 @@ public class MermaidWriter implements GraphWriter {
 		out.println("  <body>");
 		out.println("    <div style=\"border:1px solid;width:1800px;overflow:auto;\">");
 		out.println("      <pre class=\"mermaid\">");
-		out.println("\t%%{init: {\"flowchart\": {\"htmlLabels\": false}} }%%");
+		out.println("\t" + HistoryFileProcessor.MERMAID_INIT);
 		out.println("\tflowchart TD");
 	}
 
