@@ -134,7 +134,12 @@ public class CreateTemplates implements HistoryFileProcessor {
 			System.out.println("No changes");
 	}
 
-	/** Strips the {@code .html} extension from a filename to obtain the person ID. */
+	/**
+	 * Strips the {@code .html} extension from a filename to obtain the person ID.
+	 *
+	 * @param fileName filename ending with {@code .html}
+	 * @return the filename without the trailing five characters
+	 */
 	private static String stripHtmlExtension(String fileName) {
 		return fileName.substring(0, fileName.length() - 5);
 	}

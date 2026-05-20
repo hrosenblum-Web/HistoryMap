@@ -7,10 +7,12 @@ import com.opencsv.exceptions.CsvException;
  *
  * <p>Reads the cleaned {@code History.csv} using {@link SimpleReader}, which
  * builds a bidirectional relationship map, then writes one HTML file per person
- * into the {@code Relationships/} directory. Each file contains a Mermaid
- * mini-graph and a linked list of that person's connections.
+ * into the {@code Relationships/} directory. Each file is a self-contained
+ * Mermaid flowchart centred on that person, with click-through links to related
+ * people's biography pages.
  */
 public class HistoryRelationships {
+	/** When {@code true}, prints all relationships to stdout instead of saving files. */
 	private static final boolean DEBUG = false;
 
 	/**

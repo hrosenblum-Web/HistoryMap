@@ -28,17 +28,14 @@ public class MermaidToImage {
      * @param args unused
      */
     public static void main(String[] args) {
-        // 1. Define the Mermaid diagram string
         String mermaidCode = "graph TD\n" +
                              "    A[Start] --> B{Error?}\n" +
                              "    B -- Yes --> C[Fix]\n" +
                              "    B -- No --> D[Enjoy]";
 
-        // 2. Encode to Base64 (required by mermaid.ink)
         String base64Code = Base64.getUrlEncoder().encodeToString(mermaidCode.getBytes());
         String url = "https://mermaid.ink/img/" + base64Code;
 
-        // 3. Send Request and Save File
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()

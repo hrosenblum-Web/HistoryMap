@@ -12,16 +12,23 @@ import com.opencsv.exceptions.CsvException;
  * by {@link #MERMAID}). Reader and writer are always selected as a matched pair.
  */
 public class HistoryGraph {
-	/** When {@code true}, use Cytoscape.js; when {@code false}, use Mermaid or SVG. */
+	/**
+	 * Selects the renderer: {@code true} → {@link CytoscapeWriter} (interactive);
+	 * {@code false} → Mermaid-based renderer chosen by {@link #MERMAID}.
+	 */
 	private static final boolean USE_CYTOSCAPE = true;
-	/** Only consulted when {@link #USE_CYTOSCAPE} is {@code false}. */
+	/**
+	 * Only consulted when {@link #USE_CYTOSCAPE} is {@code false}.
+	 * {@code true} → {@link MermaidWriter} (client-side JS);
+	 * {@code false} → {@link SvgWriter} (pre-rendered SVG, no JS).
+	 */
 	private static final boolean MERMAID = true;
 
 	/**
 	 * Entry point for the graph generation stage. Writes {@code index.html} to
 	 * the configured path.
 	 *
-	 * @param args optional: args[0] is the base path (defaults to hardcoded path)
+	 * @param args optional: args[0] is the base path (defaults to {@link HistoryFileProcessor#DEFAULT_PATH})
 	 */
 	public static void main(String[] args) {
 		String path = args.length > 0 ? args[0] : HistoryFileProcessor.DEFAULT_PATH;

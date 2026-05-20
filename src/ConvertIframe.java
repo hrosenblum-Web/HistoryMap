@@ -15,6 +15,7 @@ import java.util.Scanner;
  * request.
  */
 public class ConvertIframe {
+	/** When {@code true}, logs the name of each converted file to stdout. */
 	private static final boolean DEBUG = false;
 
 	/**

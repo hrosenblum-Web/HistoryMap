@@ -56,7 +56,6 @@ public class MermaidNode extends GraphNode {
 		sb.append(" stroke:blue,stroke-width:4px");
 
 		if (hasImage()) {
-			// @{ } is Mermaid's node metadata syntax for attaching an image below the label.
 			sb.append("\n\t");
 			sb.append(id);
 			sb.append("@{ img: \"Images/");

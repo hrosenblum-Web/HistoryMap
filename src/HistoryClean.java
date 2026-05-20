@@ -22,6 +22,7 @@ import com.opencsv.exceptions.CsvException;
  * error.
  */
 public class HistoryClean {
+	/** When {@code true}, prints sorted output to stdout instead of overwriting the file. */
 	private static final boolean DEBUG = false;
 
 	/**
