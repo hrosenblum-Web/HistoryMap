@@ -178,7 +178,7 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("      var tip = document.getElementById('cy-tooltip');");
         out.println("      cy.on('mouseover','node',function(e){");
         out.println("        var n = e.target;");
-        out.println("        tip.textContent = n.data('label') + ' (' + (n.data('external') ? 'external' : 'internal') + ' link)';");
+        out.println("        tip.textContent = n.data('label') + ' (' + (n.data('external') ? 'external' : 'internal') + ')';");
         out.println("        tip.style.display = 'block';");
         out.println("      });");
         out.println("      cy.on('mousemove','node',function(e){");
