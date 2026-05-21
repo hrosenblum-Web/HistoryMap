@@ -103,7 +103,7 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("  <head>");
         out.println("    <meta charset=\"utf-8\">");
         out.println("    <title>Martial Arts history map</title>");
-        out.println("    <style>body{margin:0;}#cy{width:100%;height:100vh;}</style>");
+        out.println("    <style>body{margin:0;}#cy{width:100%;height:100vh;}#cy-tooltip{position:fixed;display:none;background:rgba(0,0,0,0.75);color:#fff;padding:4px 8px;border-radius:4px;font-family:sans-serif;font-size:12px;pointer-events:none;z-index:1000;white-space:nowrap;}</style>");
         out.println("  </head>");
         out.println("  <body>");
         out.println("    <div id=\"cy\"></div>");
@@ -112,6 +112,7 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("      <select id=\"filterType\" multiple size=\"5\" style=\"display:block;\"></select>");
         out.println("      <div style=\"font-size:11px;color:#888;margin-top:4px;\">None selected = show all</div>");
         out.println("    </div>");
+        out.println("    <div id=\"cy-tooltip\"></div>");
         out.println("    <script src=\"" + CYTOSCAPE_CDN + "\"></script>");
         out.println("    <script src=\"" + DAGRE_CDN + "\"></script>");
         out.println("    <script src=\"" + CYTOSCAPE_DAGRE_CDN + "\"></script>");
@@ -174,6 +175,17 @@ public class CytoscapeWriter implements GraphWriter {
         out.println("        if (url.startsWith('http')) window.open(url,'_blank');");
         out.println("        else window.location.href = url;");
         out.println("      });");
+        out.println("      var tip = document.getElementById('cy-tooltip');");
+        out.println("      cy.on('mouseover','node',function(e){");
+        out.println("        var n = e.target;");
+        out.println("        tip.textContent = n.data('label') + ' (' + (n.data('external') ? 'external' : 'internal') + ' link)';");
+        out.println("        tip.style.display = 'block';");
+        out.println("      });");
+        out.println("      cy.on('mousemove','node',function(e){");
+        out.println("        tip.style.left = (e.originalEvent.clientX + 14) + 'px';");
+        out.println("        tip.style.top  = (e.originalEvent.clientY + 14) + 'px';");
+        out.println("      });");
+        out.println("      cy.on('mouseout','node',function(){ tip.style.display = 'none'; });");
         out.println("      cy.nodes().filter(n => n.data('image')).forEach(n => {");
         out.println("        n.style({'background-image': n.data('image'),");
         out.println("                 'background-fit': 'cover', 'background-opacity': 0,");
